@@ -42,7 +42,7 @@ jobs:
         # See https://eslint.org/docs/user-guide/command-line-interface#options
         run: npm run lint:report
       - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@preview
+        uses: ataylorme/eslint-annotate-action@v1
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
