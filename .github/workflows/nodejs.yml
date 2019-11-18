@@ -14,9 +14,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - uses: webfactory/ssh-agent@v0.1.1
-        with:
-          ssh-private-key: ${{ secrets.GITHUB_SSH_PRIVATE_KEY }}
       - name: Node.JS 10.x
         uses: actions/setup-node@v1
         with:
