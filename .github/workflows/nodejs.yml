@@ -31,14 +31,12 @@ jobs:
         run: npm install
         env:
           CI: TRUE
-      - name: Test Code Linting
-        run: npm run lint
-        continue-on-error: true
       - name: Save Code Linting Report JSON
         # npm script for ESLint
         # eslint --output-file eslint_report.json --format json src
         # See https://eslint.org/docs/user-guide/command-line-interface#options
         run: npm run lint:report
+        continue-on-error: true
       - name: Annotate Code Linting Results
         uses: ataylorme/eslint-annotate-action@v1-beta1
         with:
