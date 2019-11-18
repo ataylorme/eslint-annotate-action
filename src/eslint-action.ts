@@ -149,14 +149,12 @@ async function run(): Promise<void> {
   const report = core.getInput('report-json', { required: true });
   const reportPath = path.resolve(report);
   if (!fs.existsSync(reportPath)) {
-
     core.setFailed('The report-json file "${report}" could not be resolved.');
-
   }
-  const reportContents = fs.readFileSync(reportPath,'utf-8');
-  const reportJSON = JSON.parse(reportContents)
-  const token = core.getInput('repo-token', { required:true });
-  const errorsOnly = Boolean( core.getInput('errors-only') )
+  const reportContents = fs.readFileSync(reportPath, 'utf-8');
+  const reportJSON = JSON.parse(reportContents);
+  const token = core.getInput('repo-token', { required: true });
+  const errorsOnly = Boolean(core.getInput('errors-only'));
   const prNumber = getPrNumber();
 
   if (!prNumber) {
