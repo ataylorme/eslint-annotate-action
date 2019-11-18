@@ -4114,7 +4114,7 @@ const github = __importStar(__webpack_require__(469));
 const { GITHUB_WORKSPACE } = process.env;
 const OWNER = github.context.repo.owner;
 const REPO = github.context.repo.repo;
-const CHECK_NAME = 'ESLint';
+const CHECK_NAME = 'ESLint Report Analysis';
 const getPrNumber = () => {
     const pullRequest = github.context.payload.pull_request;
     if (!pullRequest) {
@@ -4180,6 +4180,13 @@ function getChangedFiles(client, prNumber) {
         return files;
     });
 }
+function getNumErrors(lintedFiles) {
+    let errorCount = 0;
+    for (const result of lintedFiles) {
+        errorCount += result.errorCount;
+    }
+    return errorCount;
+}
 function processReport(lintedFiles, errorsOnly) {
     const annotations = [];
     let errorCount = 0;
@@ -4192,7 +4199,7 @@ function processReport(lintedFiles, errorsOnly) {
         const { filePath, messages } = result;
         errorCount += result.errorCount;
         warningCount += result.warningCount;
-        console.log(filePath);
+        console.info(`Analyzing ${filePath}`);
         for (const lintMessage of messages) {
             const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
             const isWarning = severity < 2;
@@ -4237,6 +4244,27 @@ function run() {
         const errorsOnly = Boolean(core.getInput('errors-only'));
         const prNumber = getPrNumber();
         if (!prNumber) {
+            try {
+                const numErrors = getNumErrors(reportJSON);
+                const oktokit = new github.GitHub(token);
+                yield oktokit.checks.create({
+                    owner: OWNER,
+                    repo: REPO,
+                    started_at: new Date().toISOString(),
+                    head_sha: getSha(),
+                    completed_at: new Date().toISOString(),
+                    status: 'completed',
+                    name: CHECK_NAME,
+                    conclusion: numErrors > 0 ? 'failure' : 'success',
+                    output: {
+                        title: CHECK_NAME,
+                        summary: `${numErrors} error(s) found`,
+                    },
+                });
+            }
+            catch (err) {
+                core.setFailed(err.message ? err.message : 'Error analyzing the provided ESLint report.');
+            }
             return;
         }
         try {

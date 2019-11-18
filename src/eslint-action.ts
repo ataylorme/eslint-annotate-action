@@ -9,7 +9,7 @@ import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octoki
 const { GITHUB_WORKSPACE } = process.env;
 const OWNER = github.context.repo.owner;
 const REPO = github.context.repo.repo;
-const CHECK_NAME = 'ESLint';
+const CHECK_NAME = 'ESLint Report Analysis';
 
 const getPrNumber = (): number | undefined => {
   const pullRequest = github.context.payload.pull_request;
@@ -91,6 +91,16 @@ async function getChangedFiles(client: github.GitHub, prNumber: number): Promise
   return files;
 }
 
+function getNumErrors(lintedFiles: Array<ESLintEntry>): number {
+  let errorCount = 0;
+
+  for (const result of lintedFiles) {
+    errorCount += result.errorCount;
+  }
+
+  return errorCount;
+}
+
 function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Partial<ChecksUpdateParams> {
   const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
   let errorCount = 0;
@@ -106,7 +116,7 @@ function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Pa
     errorCount += result.errorCount;
     warningCount += result.warningCount;
 
-    console.log(filePath);
+    console.info(`Analyzing ${filePath}`);
     for (const lintMessage of messages) {
       const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
 
@@ -158,6 +168,26 @@ async function run(): Promise<void> {
   const prNumber = getPrNumber();
 
   if (!prNumber) {
+    try {
+      const numErrors = getNumErrors(reportJSON);
+      const oktokit = new github.GitHub(token);
+      await oktokit.checks.create({
+        owner: OWNER,
+        repo: REPO,
+        started_at: new Date().toISOString(),
+        head_sha: getSha(),
+        completed_at: new Date().toISOString(),
+        status: 'completed',
+        name: CHECK_NAME,
+        conclusion: numErrors > 0 ? 'failure' : 'success',
+        output: {
+          title: CHECK_NAME,
+          summary: `${numErrors} error(s) found`,
+        },
+      });
+    } catch (err) {
+      core.setFailed(err.message ? err.message : 'Error analyzing the provided ESLint report.');
+    }
     return;
   }
 
