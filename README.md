@@ -44,6 +44,8 @@ jobs:
         # eslint --output-file eslint_report.json --format json src
         # See https://eslint.org/docs/user-guide/command-line-interface#options
         run: npm run lint:report
+        # Continue to the next step even if this fails
+        continue-on-error: true
       - name: Annotate Code Linting Results
         uses: ataylorme/eslint-annotate-action@preview
         with:
