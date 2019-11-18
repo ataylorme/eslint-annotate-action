@@ -150,9 +150,9 @@ async function run(): Promise<void> {
   if (!fs.existsSync(path.resolve(report))) {
     core.setFailed('The report-json file "${report}" could not be resolved.');
   }
-  const reportJSON = JSON.parse(path.resolve(report));
+  const reportJSON = JSON.parse(path.resolve(report))
   const token = core.getInput('repo-token', { required: true });
-  const errorsOnly = Boolean(core.getInput('errors-only'));
+  const errorsOnly = Boolean( core.getInput('errors-only') )
   const prNumber = getPrNumber();
 
   if (!prNumber) {
