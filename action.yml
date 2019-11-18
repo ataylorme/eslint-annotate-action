@@ -1,0 +1,18 @@
+name: "ESLint Annotate from Report JSON"
+description: "Annotates pull request diffs with warnings and errors from an ESLint report JSON file."
+inputs:
+  repo-token:
+    description: "Token used to interact with the Github API."
+    required: true
+  report-json:
+    description: "ESLint report file in JSON format."
+    default: "eslint_report.json"
+  errors-only:
+    description: "Ignore warnings, only annotating ESLint errors."
+    default: false
+runs:
+  using: "node12"
+  main: "dist/index.js"
+branding:
+  icon: "check-circle"
+  color: "yellow"
