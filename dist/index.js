@@ -4227,10 +4227,12 @@ function processReport(lintedFiles, errorsOnly) {
 function run() {
     return __awaiter(this, void 0, void 0, function* () {
         const report = core.getInput('report-json', { required: true });
-        if (!fs_1.default.existsSync(path_1.default.resolve(report))) {
+        const reportPath = path_1.default.resolve(report);
+        if (!fs_1.default.existsSync(reportPath)) {
             core.setFailed('The report-json file "${report}" could not be resolved.');
         }
-        const reportJSON = JSON.parse(path_1.default.resolve(report));
+        const reportContents = fs_1.default.readFileSync(reportPath, 'utf-8');
+        const reportJSON = JSON.parse(reportContents);
         const token = core.getInput('repo-token', { required: true });
         const errorsOnly = Boolean(core.getInput('errors-only'));
         const prNumber = getPrNumber();

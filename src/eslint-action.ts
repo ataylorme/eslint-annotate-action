@@ -147,11 +147,15 @@ function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Pa
 
 async function run(): Promise<void> {
   const report = core.getInput('report-json', { required: true });
-  if (!fs.existsSync(path.resolve(report))) {
+  const reportPath = path.resolve(report);
+  if (!fs.existsSync(reportPath)) {
+
     core.setFailed('The report-json file "${report}" could not be resolved.');
+
   }
-  const reportJSON = JSON.parse(path.resolve(report))
-  const token = core.getInput('repo-token', { required: true });
+  const reportContents = fs.readFileSync(reportPath,'utf-8');
+  const reportJSON = JSON.parse(reportContents)
+  const token = core.getInput('repo-token', { required:true });
   const errorsOnly = Boolean( core.getInput('errors-only') )
   const prNumber = getPrNumber();
 
