@@ -4204,13 +4204,14 @@ function analyzeReport(lintedFiles, errorsOnly) {
             const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '');
             const sha = getSha();
             const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
+            const messageFormatted = message.replace('`', '\\`');
             const messageText = `
       ### ${typeText} in \`${filePathTrimmed}\`
       - [Link](${link})
       - Start Line: \`${line}\`
       - End Line: \`${endLine}\`
       - Severity: \`${severity}\` (${typeText})
-      - message: \`[${ruleId}] ${message}\`
+      - message: \`[${ruleId}] ${messageFormatted}\`
 
       `;
             if (isWarning) {

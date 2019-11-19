@@ -125,13 +125,15 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
 
       const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
 
+      const messageFormatted = message.replace('`', '\\`');
+
       const messageText = `
       ### ${typeText} in \`${filePathTrimmed}\`
       - [Link](${link})
       - Start Line: \`${line}\`
       - End Line: \`${endLine}\`
       - Severity: \`${severity}\` (${typeText})
-      - message: \`[${ruleId}] ${message}\`
+      - message: \`[${ruleId}] ${messageFormatted}\`
 
       `;
 
