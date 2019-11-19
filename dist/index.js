@@ -4198,29 +4198,21 @@ function analyzeReport(lintedFiles, errorsOnly) {
         warningCount += result.warningCount;
         const { filePath, messages } = result;
         for (const lintMessage of messages) {
-            const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
+            const { line, endLine, severity, ruleId, message } = lintMessage;
             const isWarning = severity < 2;
             const typeText = isWarning ? 'Warning' : 'Error';
+            const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '');
+            const sha = getSha();
+            const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
             const messageText = `
-      ### ${typeText} in \`${filePath.replace(`${GITHUB_WORKSPACE}/`, '')}\`
-      start_line: \`${line}\`
-      end_line: \`${endLine}\`
-      severity: \`${severity}\`
-      message: [${ruleId}] ${message}
+      ### ${typeText} in \`${filePathTrimmed}\`
+      - [Link](${link})
+      - Start Line: \`${line}\`
+      - End Line: \`${endLine}\`
+      - Severity: \`${severity}\` (${typeText})
+      - message: \`[${ruleId}] ${message}\`
 
       `;
-            const annotation = {
-                path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
-                start_line: line,
-                end_line: endLine,
-                annotation_level: isWarning ? 'warning' : 'failure',
-                message: `[${ruleId}] ${message}`,
-            };
-            // Start and end column can only be added if start_line and end_line are equal
-            if (line === endLine) {
-                annotation.start_column = column;
-                annotation.end_column = endColumn;
-            }
             if (isWarning) {
                 warningText += messageText;
             }
