@@ -207,7 +207,7 @@ async function run(): Promise<void> {
   const reportContents = fs.readFileSync(reportPath, 'utf-8');
   const reportJSON = JSON.parse(reportContents);
   const token = core.getInput('repo-token', { required: true });
-  const errorsOnly = Boolean(core.getInput('errors-only'));
+  const errorsOnly = !!core.getInput('errors-only');
   const prNumber = getPrNumber();
 
   if (!prNumber) {

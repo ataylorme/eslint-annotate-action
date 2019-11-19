@@ -6,7 +6,11 @@ Analyzes an ESLint a report JSON file and posts the results.
 
 On `pull_request` annotates the pull request diff with warnings and errors
 
+![image](./assets/eslint-annotate-action-pr-error-example.png)
+
 On `push` creates a `ESLint Report Analysis` with a summary of errors and warnings, including links to the line numbers of the violations.
+
+![image](./assets/eslint-annotate-action-push-report-example.png)
 
 ## Why another ESLint action?
 

@@ -4277,7 +4277,7 @@ function run() {
         const reportContents = fs_1.default.readFileSync(reportPath, 'utf-8');
         const reportJSON = JSON.parse(reportContents);
         const token = core.getInput('repo-token', { required: true });
-        const errorsOnly = Boolean(core.getInput('errors-only'));
+        const errorsOnly = !!core.getInput('errors-only');
         const prNumber = getPrNumber();
         if (!prNumber) {
             try {
