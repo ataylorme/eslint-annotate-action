@@ -32,3 +32,9 @@ interface ESLintEntry {
   fixableWarningCount: number;
   source?: string;
 }
+
+interface ReportAnalysis {
+  errorCount: number;
+  warningCount: number;
+  markdown: string;
+}

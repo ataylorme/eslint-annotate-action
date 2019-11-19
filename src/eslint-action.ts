@@ -101,6 +101,74 @@ function getNumErrors(lintedFiles: Array<ESLintEntry>): number {
   return errorCount;
 }
 
+function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): ReportAnalysis {
+  let errorCount = 0;
+  let warningCount = 0;
+  let errorText = '';
+  let warningText = '';
+  let markdownText = '';
+
+  for (const result of lintedFiles) {
+    errorCount += result.errorCount;
+    warningCount += result.warningCount;
+    const { filePath, messages } = result;
+    for (const lintMessage of messages) {
+      const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
+
+      const isWarning = severity < 2;
+
+      const typeText = isWarning ? 'Warning' : 'Error';
+
+      const messageText = `
+      ### ${typeText} in \`${filePath.replace(`${GITHUB_WORKSPACE}/`, '')}\`
+      start_line: \`${line}\`
+      end_line: \`${endLine}\`
+      severity: \`${severity}\`
+      message: [${ruleId}] ${message}
+
+      `;
+
+      const annotation: ChecksUpdateParamsOutputAnnotations = {
+        path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
+        start_line: line,
+        end_line: endLine,
+        annotation_level: isWarning ? 'warning' : 'failure',
+        message: `[${ruleId}] ${message}`,
+      };
+
+      // Start and end column can only be added if start_line and end_line are equal
+      if (line === endLine) {
+        annotation.start_column = column;
+        annotation.end_column = endColumn;
+      }
+
+      if (isWarning) {
+        warningText += messageText;
+      } else {
+        errorText += messageText;
+      }
+    }
+  }
+
+  markdownText += `
+  ## Errors:
+
+  ${errorText}`;
+
+  if (!errorsOnly) {
+    markdownText += `
+    ## Warnings:
+
+    ${warningText}`;
+  }
+
+  return {
+    errorCount: errorCount,
+    warningCount: warningCount,
+    markdown: markdownText,
+  };
+}
+
 function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Partial<ChecksUpdateParams> {
   const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
   let errorCount = 0;
@@ -149,7 +217,7 @@ function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Pa
     conclusion: errorCount > 0 ? 'failure' : 'success',
     output: {
       title: CHECK_NAME,
-      summary: `${errorCount} error(s) and ${warningCount} warning(s) found`,
+      summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
       annotations,
     },
   };
@@ -169,7 +237,7 @@ async function run(): Promise<void> {
 
   if (!prNumber) {
     try {
-      const numErrors = getNumErrors(reportJSON);
+      const reportAnalysis = analyzeReport(reportJSON, errorsOnly);
       const oktokit = new github.GitHub(token);
       await oktokit.checks.create({
         owner: OWNER,
@@ -179,10 +247,11 @@ async function run(): Promise<void> {
         completed_at: new Date().toISOString(),
         status: 'completed',
         name: CHECK_NAME,
-        conclusion: numErrors > 0 ? 'failure' : 'success',
+        conclusion: reportAnalysis.errorCount > 0 ? 'failure' : 'success',
         output: {
           title: CHECK_NAME,
-          summary: `${numErrors} error(s) found`,
+          summary: `${reportAnalysis.errorCount} ESLint error(s) were found`,
+          text: reportAnalysis.markdown,
         },
       });
     } catch (err) {
