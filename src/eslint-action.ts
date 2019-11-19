@@ -119,7 +119,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
 
       const typeText = isWarning ? 'Warning' : 'Error';
 
-      const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '');
+      const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '')
 
       const sha = getSha();
 
@@ -135,6 +135,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
       messageText += '- Message: `[' + ruleId + '] ' + messageFormatted + '`\n';
 
       if (isWarning) {
+
         warningText += messageText;
       } else {
         errorText += messageText;
@@ -159,7 +160,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
   };
 }
 
-function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Partial<ChecksUpdateParams> {
+function processReport( lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Partial<ChecksUpdateParams> {
   const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
   let errorCount = 0;
   let warningCount = 0;
