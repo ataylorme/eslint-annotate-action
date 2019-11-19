@@ -33,9 +33,6 @@ jobs:
 
     steps:
       - uses: actions/checkout@v1
-      - uses: webfactory/ssh-agent@v0.1.1
-        with:
-          ssh-private-key: ${{ secrets.GITHUB_SSH_PRIVATE_KEY }}
       - name: Node.JS 10.x
         uses: actions/setup-node@v1
         with:
@@ -63,7 +60,7 @@ jobs:
         # Continue to the next step even if this fails
         continue-on-error: true
       - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@1.0.1
+        uses: ataylorme/eslint-annotate-action@1.0.4
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
