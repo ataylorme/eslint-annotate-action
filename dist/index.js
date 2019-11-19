@@ -4205,7 +4205,7 @@ function analyzeReport(lintedFiles, errorsOnly) {
             const sha = getSha();
             const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
             const messageFormatted = message.replace(/`/g, '\\`');
-            let messageText = '### ${typeText} in `' + filePathTrimmed + '`\n';
+            let messageText = '### ' + typeText + ' in `' + filePathTrimmed + '`\n';
             messageText += '- [Link](' + link + ')\n';
             messageText += '- Start Line: `' + line + '`\n';
             messageText += '- End Line: `' + endLine + '`\n';
@@ -4308,6 +4308,13 @@ function run() {
                         text: reportAnalysis.markdown,
                     },
                 });
+                if (reportAnalysis.errorCount > 0) {
+                    core.setFailed('ESLint errors detected.');
+                    process.exit(1);
+                }
+                else {
+                    process.exit(0);
+                }
             }
             catch (err) {
                 core.setFailed(err.message ? err.message : 'Error analyzing the provided ESLint report.');
@@ -4330,6 +4337,13 @@ function run() {
                 const payload = processReport(reportJSON, errorsOnly);
                 // See https://octokit.github.io/rest.js/#octokit-routes-checks
                 yield oktokit.checks.update(Object.assign({ owner: OWNER, repo: REPO, completed_at: new Date().toISOString(), status: 'completed', check_run_id: checkId }, payload));
+                if (payload.conclusion === 'failure') {
+                    core.setFailed('ESLint errors detected.');
+                    process.exit(1);
+                }
+                else {
+                    process.exit(0);
+                }
             }
             else {
                 core.info('No files changed in the PR.');

@@ -127,7 +127,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
 
       const messageFormatted = message.replace(/`/g, '\\`');
 
-      let messageText = '### ${typeText} in `' + filePathTrimmed + '`\n';
+      let messageText = '### ' + typeText + ' in `' + filePathTrimmed + '`\n';
       messageText += '- [Link](' + link + ')\n';
       messageText += '- Start Line: `' + line + '`\n';
       messageText += '- End Line: `' + endLine + '`\n';
@@ -244,6 +244,12 @@ async function run(): Promise<void> {
           text: reportAnalysis.markdown,
         },
       });
+      if (reportAnalysis.errorCount > 0) {
+        core.setFailed('ESLint errors detected.');
+        process.exit(1);
+      } else {
+        process.exit(0);
+      }
     } catch (err) {
       core.setFailed(err.message ? err.message : 'Error analyzing the provided ESLint report.');
     }
@@ -278,6 +284,13 @@ async function run(): Promise<void> {
         check_run_id: checkId,
         ...payload,
       });
+
+      if (payload.conclusion === 'failure') {
+        core.setFailed('ESLint errors detected.');
+        process.exit(1);
+      } else {
+        process.exit(0);
+      }
     } else {
       core.info('No files changed in the PR.');
     }
