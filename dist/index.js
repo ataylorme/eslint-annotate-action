@@ -4205,15 +4205,12 @@ function analyzeReport(lintedFiles, errorsOnly) {
             const sha = getSha();
             const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
             const messageFormatted = message.replace(/`/g, '\\`');
-            const messageText = `
-      ### ${typeText} in \`${filePathTrimmed}\`
-      - [Link](${link})
-      - Start Line: \`${line}\`
-      - End Line: \`${endLine}\`
-      - Severity: \`${severity}\` (${typeText})
-      - message: \`[${ruleId}] ${messageFormatted}\`
-
-      `;
+            let messageText = '### ${typeText} in `' + filePathTrimmed + '`\n';
+            messageText += '- [Link](' + link + ')\n';
+            messageText += '- Start Line: `' + line + '`\n';
+            messageText += '- End Line: `' + endLine + '`\n';
+            messageText += '- Severity: `' + severity + '` (' + typeText + ')\n';
+            messageText += '- message: `[' + ruleId + '] ' + messageFormatted + '`\n';
             if (isWarning) {
                 warningText += messageText;
             }
@@ -4222,15 +4219,13 @@ function analyzeReport(lintedFiles, errorsOnly) {
             }
         }
     }
-    markdownText += `
-  ## Errors:
-
-  ${errorText}`;
-    if (!errorsOnly) {
-        markdownText += `
-    ## Warnings:
-
-    ${warningText}`;
+    if (errorText.length) {
+        markdownText += '## ' + errorCount + ' Error(s):\n';
+        markdownText += errorText + '\n';
+    }
+    if (!errorsOnly && warningText.length) {
+        markdownText += '## ' + warningCount + ' Warning(s):\n';
+        markdownText += warningText + '\n';
     }
     return {
         errorCount: errorCount,

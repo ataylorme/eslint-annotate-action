@@ -127,15 +127,12 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
 
       const messageFormatted = message.replace(/`/g, '\\`');
 
-      const messageText = `
-      ### ${typeText} in \`${filePathTrimmed}\`
-      - [Link](${link})
-      - Start Line: \`${line}\`
-      - End Line: \`${endLine}\`
-      - Severity: \`${severity}\` (${typeText})
-      - message: \`[${ruleId}] ${messageFormatted}\`
-
-      `;
+      let messageText = '### ${typeText} in `' + filePathTrimmed + '`\n';
+      messageText += '- [Link](' + link + ')\n';
+      messageText += '- Start Line: `' + line + '`\n';
+      messageText += '- End Line: `' + endLine + '`\n';
+      messageText += '- Severity: `' + severity + '` (' + typeText + ')\n';
+      messageText += '- message: `[' + ruleId + '] ' + messageFormatted + '`\n';
 
       if (isWarning) {
         warningText += messageText;
@@ -145,16 +142,14 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
     }
   }
 
-  markdownText += `
-  ## Errors:
+  if (errorText.length) {
+    markdownText += '## ' + errorCount + ' Error(s):\n';
+    markdownText += errorText + '\n';
+  }
 
-  ${errorText}`;
-
-  if (!errorsOnly) {
-    markdownText += `
-    ## Warnings:
-
-    ${warningText}`;
+  if (!errorsOnly && warningText.length) {
+    markdownText += '## ' + warningCount + ' Warning(s):\n';
+    markdownText += warningText + '\n';
   }
 
   return {
