@@ -172,7 +172,7 @@ function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Pa
       const annotation: ChecksUpdateParamsOutputAnnotations = {
         path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
         start_line: line,
-        end_line: endLine,
+        end_line: endLine ? endLine : line,
         annotation_level: isWarning ? 'warning' : 'failure',
         message: `[${ruleId}] ${message}`,
       };

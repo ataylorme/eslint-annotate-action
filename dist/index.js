@@ -4245,7 +4245,7 @@ function processReport(lintedFiles, errorsOnly) {
             const annotation = {
                 path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
                 start_line: line,
-                end_line: endLine,
+                end_line: endLine ? endLine : line,
                 annotation_level: isWarning ? 'warning' : 'failure',
                 message: `[${ruleId}] ${message}`,
             };
