@@ -123,7 +123,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
 
       const sha = getSha();
 
-      const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
+      const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`
 
       let messageText = '### [' + typeText + ' in `' + filePathTrimmed + '`](' + link + ')\n';
       messageText += '- Start Line: `' + line + '`\n';
@@ -132,6 +132,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
       messageText += '- Message: [' + ruleId + '] ' + message + '\n';
 
       if (isWarning) {
+
         warningText += messageText;
       } else {
         errorText += messageText;
@@ -139,7 +140,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
     }
   }
 
-  if (errorText.length) {
+  if (errorText.length ) {
     markdownText += '## ' + errorCount + ' Error(s):\n';
     markdownText += errorText + '\n';
   }
