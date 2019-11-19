@@ -250,7 +250,7 @@ async function run(): Promise<void> {
         conclusion: reportAnalysis.errorCount > 0 ? 'failure' : 'success',
         output: {
           title: CHECK_NAME,
-          summary: `${reportAnalysis.errorCount} ESLint error(s) were found`,
+          summary: `${reportAnalysis.errorCount} error(s) and ${reportAnalysis.warningCount} warning(s) were found`,
           text: reportAnalysis.markdown,
         },
       });
