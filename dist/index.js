@@ -4223,7 +4223,7 @@ function analyzeReport(lintedFiles) {
         markdown: markdownText,
     };
 }
-function processReport(lintedFiles, errorsOnly) {
+function processReport(lintedFiles) {
     const annotations = [];
     let errorCount = 0;
     let warningCount = 0;
@@ -4239,9 +4239,6 @@ function processReport(lintedFiles, errorsOnly) {
         for (const lintMessage of messages) {
             const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
             const isWarning = severity < 2;
-            if (errorsOnly && isWarning) {
-                continue;
-            }
             const annotation = {
                 path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
                 start_line: line,
@@ -4277,7 +4274,6 @@ function run() {
         const reportContents = fs_1.default.readFileSync(reportPath, 'utf-8');
         const reportJSON = JSON.parse(reportContents);
         const token = core.getInput('repo-token', { required: true });
-        const errorsOnly = !!core.getInput('errors-only');
         const prNumber = getPrNumber();
         if (!prNumber) {
             try {
@@ -4324,7 +4320,7 @@ function run() {
                     status: 'in_progress',
                     name: CHECK_NAME,
                 });
-                const payload = processReport(reportJSON, errorsOnly);
+                const payload = processReport(reportJSON);
                 // See https://octokit.github.io/rest.js/#octokit-routes-checks
                 yield oktokit.checks.update(Object.assign({ owner: OWNER, repo: REPO, completed_at: new Date().toISOString(), status: 'completed', check_run_id: checkId }, payload));
                 if (payload.conclusion === 'failure') {

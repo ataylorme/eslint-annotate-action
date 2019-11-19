@@ -7,9 +7,6 @@ inputs:
   report-json:
     description: "ESLint report file in JSON format."
     default: "eslint_report.json"
-  errors-only:
-    description: "Ignore warnings, only annotating ESLint errors."
-    default: false
 runs:
   using: "node12"
   main: "dist/index.js"

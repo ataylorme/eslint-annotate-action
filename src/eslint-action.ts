@@ -144,7 +144,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
   };
 }
 
-function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Partial<ChecksUpdateParams> {
+function processReport(lintedFiles: Array<ESLintEntry>): Partial<ChecksUpdateParams> {
   const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
   let errorCount = 0;
   let warningCount = 0;
@@ -164,10 +164,6 @@ function processReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Pa
       const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
 
       const isWarning = severity < 2;
-
-      if (errorsOnly && isWarning) {
-        continue;
-      }
 
       const annotation: ChecksUpdateParamsOutputAnnotations = {
         path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
@@ -207,7 +203,6 @@ async function run(): Promise<void> {
   const reportContents = fs.readFileSync(reportPath, 'utf-8');
   const reportJSON = JSON.parse(reportContents);
   const token = core.getInput('repo-token', { required: true });
-  const errorsOnly = !!core.getInput('errors-only');
   const prNumber = getPrNumber();
 
   if (!prNumber) {
@@ -258,7 +253,7 @@ async function run(): Promise<void> {
         name: CHECK_NAME,
       });
 
-      const payload = processReport(reportJSON, errorsOnly);
+      const payload = processReport(reportJSON);
 
       // See https://octokit.github.io/rest.js/#octokit-routes-checks
       await oktokit.checks.update({
