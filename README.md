@@ -20,7 +20,7 @@ This allows for more flexibility on how ESLint is run. This action is agnostic e
 
 ## Usage Example
 
-In `.github/workflows/nodejs.yml:
+In `.github/workflows/nodejs.yml`:
 
 ```yml
 name: Example NodeJS Workflow
