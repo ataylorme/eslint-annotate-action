@@ -4204,7 +4204,7 @@ function analyzeReport(lintedFiles, errorsOnly) {
             const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '');
             const sha = getSha();
             const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
-            const messageFormatted = message.replace('`', '\\`');
+            const messageFormatted = message.replace(/`/g, '\\`');
             const messageText = `
       ### ${typeText} in \`${filePathTrimmed}\`
       - [Link](${link})

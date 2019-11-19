@@ -125,7 +125,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
 
       const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
 
-      const messageFormatted = message.replace('`', '\\`');
+      const messageFormatted = message.replace(/`/g, '\\`');
 
       const messageText = `
       ### ${typeText} in \`${filePathTrimmed}\`
