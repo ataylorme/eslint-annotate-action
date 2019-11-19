@@ -4180,13 +4180,6 @@ function getChangedFiles(client, prNumber) {
         return files;
     });
 }
-function getNumErrors(lintedFiles) {
-    let errorCount = 0;
-    for (const result of lintedFiles) {
-        errorCount += result.errorCount;
-    }
-    return errorCount;
-}
 function analyzeReport(lintedFiles) {
     let errorCount = 0;
     let warningCount = 0;
@@ -4200,7 +4193,6 @@ function analyzeReport(lintedFiles) {
         for (const lintMessage of messages) {
             const { line, endLine, severity, ruleId, message } = lintMessage;
             const isWarning = severity < 2;
-            const typeText = isWarning ? 'Warning' : 'Error';
             const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '');
             const sha = getSha();
             const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;

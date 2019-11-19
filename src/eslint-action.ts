@@ -91,16 +91,6 @@ async function getChangedFiles(client: github.GitHub, prNumber: number): Promise
   return files;
 }
 
-function getNumErrors(lintedFiles: Array<ESLintEntry>): number {
-  let errorCount = 0;
-
-  for (const result of lintedFiles) {
-    errorCount += result.errorCount;
-  }
-
-  return errorCount;
-}
-
 function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
   let errorCount = 0;
   let warningCount = 0;
@@ -116,8 +106,6 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
       const { line, endLine, severity, ruleId, message } = lintMessage;
 
       const isWarning = severity < 2;
-
-      const typeText = isWarning ? 'Warning' : 'Error';
 
       const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '');
 
