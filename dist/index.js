@@ -4187,7 +4187,7 @@ function getNumErrors(lintedFiles) {
     }
     return errorCount;
 }
-function analyzeReport(lintedFiles, errorsOnly) {
+function analyzeReport(lintedFiles) {
     let errorCount = 0;
     let warningCount = 0;
     let errorText = '';
@@ -4223,7 +4223,7 @@ function analyzeReport(lintedFiles, errorsOnly) {
         markdownText += '## ' + errorCount + ' Error(s):\n';
         markdownText += errorText + '\n';
     }
-    if (!errorsOnly && warningText.length) {
+    if (warningText.length) {
         markdownText += '## ' + warningCount + ' Warning(s):\n';
         markdownText += warningText + '\n';
     }
@@ -4291,7 +4291,7 @@ function run() {
         const prNumber = getPrNumber();
         if (!prNumber) {
             try {
-                const reportAnalysis = analyzeReport(reportJSON, errorsOnly);
+                const reportAnalysis = analyzeReport(reportJSON);
                 const oktokit = new github.GitHub(token);
                 yield oktokit.checks.create({
                     owner: OWNER,

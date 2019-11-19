@@ -101,7 +101,7 @@ function getNumErrors(lintedFiles: Array<ESLintEntry>): number {
   return errorCount;
 }
 
-function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): ReportAnalysis {
+function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
   let errorCount = 0;
   let warningCount = 0;
   let errorText = '';
@@ -147,7 +147,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
     markdownText += errorText + '\n';
   }
 
-  if (!errorsOnly && warningText.length) {
+  if (warningText.length) {
     markdownText += '## ' + warningCount + ' Warning(s):\n';
     markdownText += warningText + '\n';
   }
@@ -227,7 +227,7 @@ async function run(): Promise<void> {
 
   if (!prNumber) {
     try {
-      const reportAnalysis = analyzeReport(reportJSON, errorsOnly);
+      const reportAnalysis = analyzeReport(reportJSON);
       const oktokit = new github.GitHub(token);
       await oktokit.checks.create({
         owner: OWNER,
