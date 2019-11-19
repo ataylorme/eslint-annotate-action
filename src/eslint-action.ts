@@ -132,7 +132,7 @@ function analyzeReport(lintedFiles: Array<ESLintEntry>, errorsOnly: boolean): Re
       messageText += '- Start Line: `' + line + '`\n';
       messageText += '- End Line: `' + endLine + '`\n';
       messageText += '- Severity: `' + severity + '` (' + typeText + ')\n';
-      messageText += '- message: `[' + ruleId + '] ' + messageFormatted + '`\n';
+      messageText += '- Message: `[' + ruleId + '] ' + messageFormatted + '`\n';
 
       if (isWarning) {
         warningText += messageText;

@@ -4210,7 +4210,7 @@ function analyzeReport(lintedFiles, errorsOnly) {
             messageText += '- Start Line: `' + line + '`\n';
             messageText += '- End Line: `' + endLine + '`\n';
             messageText += '- Severity: `' + severity + '` (' + typeText + ')\n';
-            messageText += '- message: `[' + ruleId + '] ' + messageFormatted + '`\n';
+            messageText += '- Message: `[' + ruleId + '] ' + messageFormatted + '`\n';
             if (isWarning) {
                 warningText += messageText;
             }
