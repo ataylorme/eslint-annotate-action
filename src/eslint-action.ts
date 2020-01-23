@@ -254,15 +254,6 @@ async function run(): Promise<void> {
       if (undefined === payload || undefined === payload.output) {
         return;
       }
-      /*
-      {
-      conclusion: errorCount > 0 ? 'failure' : 'success',
-      output: {
-        title: CHECK_NAME,
-        summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
-        annotations,
-      }
-      */
 
       /**
        * If there are more than 50 annotations
