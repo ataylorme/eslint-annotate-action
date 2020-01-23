@@ -150,10 +150,6 @@ function processReport(lintedFiles: Array<ESLintEntry>): Partial<ChecksUpdatePar
   let warningCount = 0;
 
   for (const result of lintedFiles) {
-    // Max 50 annotations per API request
-    if (annotations.length >= 50) {
-      break;
-    }
     const { filePath, messages } = result;
 
     errorCount += result.errorCount;
@@ -254,6 +250,48 @@ async function run(): Promise<void> {
       });
 
       const payload = processReport(reportJSON);
+
+      if (undefined === payload || undefined === payload.output) {
+        return;
+      }
+      /*
+      {
+      conclusion: errorCount > 0 ? 'failure' : 'success',
+      output: {
+        title: CHECK_NAME,
+        summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
+        annotations,
+      }
+      */
+
+      /**
+       * If there are more than 50 annotations
+       * we need to make multiple API requests
+       * to avoid rate limiting errors
+       *
+       * See https://developer.github.com/v3/checks/runs/#output-object-1
+       */
+      if (undefined === payload.output.annotations) {
+        payload.output.annotations = [];
+      }
+
+      const numberOfAnnotations = payload.output.annotations.length;
+      let batch = 0;
+      while (payload.output.annotations.length > 50) {
+        batch++;
+        const fiftyAnnotations = payload.output.annotations?.splice(0, 50);
+        await oktokit.checks.update({
+          owner: OWNER,
+          repo: REPO,
+          check_run_id: checkId,
+          status: 'in_progress',
+          output: {
+            title: CHECK_NAME,
+            summary: `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch}...`,
+            annotations: fiftyAnnotations,
+          },
+        });
+      }
 
       // See https://octokit.github.io/rest.js/#octokit-routes-checks
       await oktokit.checks.update({
