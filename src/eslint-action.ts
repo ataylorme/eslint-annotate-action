@@ -204,8 +204,8 @@ async function run(): Promise<void> {
   if (!prNumber) {
     try {
       const reportAnalysis = analyzeReport(reportJSON);
-      const oktokit = new github.GitHub(token);
-      await oktokit.checks.create({
+      const octokit = new github.GitHub(token);
+      await octokit.checks.create({
         owner: OWNER,
         repo: REPO,
         started_at: new Date().toISOString(),
@@ -233,14 +233,14 @@ async function run(): Promise<void> {
   }
 
   try {
-    const oktokit = new github.GitHub(token);
+    const octokit = new github.GitHub(token);
     core.debug('Fetching files changed in the pull request.');
-    const files = await getChangedFiles(oktokit, prNumber);
+    const files = await getChangedFiles(octokit, prNumber);
 
     if (files.length > 0) {
       const {
         data: { id: checkId },
-      } = await oktokit.checks.create({
+      } = await octokit.checks.create({
         owner: OWNER,
         repo: REPO,
         started_at: new Date().toISOString(),
@@ -271,7 +271,7 @@ async function run(): Promise<void> {
       while (payload.output.annotations.length > 50) {
         batch++;
         const fiftyAnnotations = payload.output.annotations?.splice(0, 50);
-        await oktokit.checks.update({
+        await octokit.checks.update({
           owner: OWNER,
           repo: REPO,
           check_run_id: checkId,
@@ -285,7 +285,7 @@ async function run(): Promise<void> {
       }
 
       // See https://octokit.github.io/rest.js/#octokit-routes-checks
-      await oktokit.checks.update({
+      await octokit.checks.update({
         owner: OWNER,
         repo: REPO,
         completed_at: new Date().toISOString(),
