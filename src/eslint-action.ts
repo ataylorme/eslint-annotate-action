@@ -100,11 +100,16 @@ async function run(): Promise<void> {
      *
      * See https://developer.github.com/v3/checks/runs/#output-object-1
      */
-    const numberOfAnnotations = esLintAnalysis.annotations.length;
+    const annotations = esLintAnalysis.annotations;
+    const numberOfAnnotations = annotations.length;
     let batch = 0;
-    while (esLintAnalysis.annotations.length > 50) {
+    const batchSize = 25;
+    const numBatches = Math.ceil(numberOfAnnotations / batchSize);
+    while (annotations.length >= batchSize) {
       batch++;
-      const fiftyAnnotations = esLintAnalysis.annotations?.splice(0, 50);
+      const batchMessage = `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch} of ${numBatches}...`;
+      core.info(batchMessage);
+      const annotationBatch = annotations.splice(0, batchSize);
       await OCTOKIT.checks.update({
         owner: OWNER,
         repo: REPO,
@@ -112,8 +117,8 @@ async function run(): Promise<void> {
         status: 'in_progress',
         output: {
           title: CHECK_NAME,
-          summary: `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch}...`,
-          annotations: fiftyAnnotations,
+          summary: batchMessage,
+          annotations: annotationBatch,
         },
       });
     }
@@ -132,7 +137,7 @@ async function run(): Promise<void> {
       output: {
         title: CHECK_NAME,
         summary: esLintAnalysis.summary,
-        annotations: esLintAnalysis.annotations,
+        annotations: annotations,
       },
     });
 
