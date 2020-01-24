@@ -58,9 +58,10 @@ export default async function getPullRequestFilesChanged(): Promise<string[]> {
       hasNextPage = result.hasNextPage;
       startCursor = result.endCursor;
     } catch (err) {
+      // Catch any errors from API calls and fail the action
       core.error(err);
       core.setFailed('Error occurred getting files changes in the pull request.');
-      return files;
+      process.exit(1);
     }
   }
 

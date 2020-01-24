@@ -2,7 +2,7 @@ import * as github from '@actions/github';
 import * as core from '@actions/core';
 
 const token = core.getInput('repo-token', { required: true });
-const octokit = new github.GitHub(this.token);
+const octokit = new github.GitHub(token);
 const pullRequest = github.context.payload.pull_request;
 
 const getPrNumber = (): number => {

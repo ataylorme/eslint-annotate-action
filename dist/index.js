@@ -408,7 +408,7 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const github = __importStar(__webpack_require__(469));
 const core = __importStar(__webpack_require__(470));
 const token = core.getInput('repo-token', { required: true });
-const octokit = new github.GitHub(this.token);
+const octokit = new github.GitHub(token);
 const pullRequest = github.context.payload.pull_request;
 const getPrNumber = () => {
     if (!pullRequest) {
@@ -4405,7 +4405,7 @@ function run() {
             let batch = 0;
             const batchSize = 50;
             const numBatches = Math.ceil(numberOfAnnotations / batchSize);
-            while (annotations.length && batch <= numBatches) {
+            while (annotations.length > batchSize) {
                 // Increment the current batch number
                 batch++;
                 const batchMessage = `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch} of ${numBatches}...`;
@@ -11636,9 +11636,10 @@ function getPullRequestFilesChanged() {
                 startCursor = result.endCursor;
             }
             catch (err) {
+                // Catch any errors from API calls and fail the action
                 core.error(err);
                 core.setFailed('Error occurred getting files changes in the pull request.');
-                return files;
+                process.exit(1);
             }
         }
         return files;
