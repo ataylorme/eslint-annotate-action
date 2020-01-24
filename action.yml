@@ -7,6 +7,7 @@ inputs:
   report-json:
     description: "ESLint report file in JSON format."
     default: "eslint_report.json"
+    required: false
 runs:
   using: "node12"
   main: "dist/index.js"

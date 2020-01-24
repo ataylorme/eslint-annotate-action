@@ -1,3 +1,5 @@
+import { ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
+
 declare namespace NodeJS {
   export interface ProcessEnv {
     GITHUB_ACTION: string;
@@ -8,10 +10,11 @@ declare namespace NodeJS {
 interface PrResponse {
   endCursor?: string;
   hasNextPage?: boolean;
-  files: string[];
+  files: Array<string>;
 }
 
 interface ESLintMessage {
+  filePath: string;
   ruleId: string;
   severity: number;
   message: string;
@@ -20,7 +23,10 @@ interface ESLintMessage {
   nodeType: string | null;
   endLine: number;
   endColumn: number;
-  fix: object;
+  fix: {
+    range: Array<number>;
+    test: string;
+  };
 }
 
 interface ESLintEntry {
@@ -37,4 +43,15 @@ interface ReportAnalysis {
   errorCount: number;
   warningCount: number;
   markdown: string;
+}
+
+type ESLintReport = Array<ESLintEntry>;
+
+interface AnalyzedESLintReport {
+  errorCount: number;
+  warningCount: number;
+  success: boolean;
+  markdown: string;
+  summary: string;
+  annotations: Array<ChecksUpdateParamsOutputAnnotations>;
 }

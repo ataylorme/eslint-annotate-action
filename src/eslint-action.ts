@@ -1,226 +1,53 @@
+/**
+ * Disable ESLint camel case check and the
+ * GitHub API doesn't use it.
+ * See https://developer.github.com/v3/checks/runs/#annotations-object-1
+ */
 /* eslint-disable @typescript-eslint/camelcase */
-import fs from 'fs';
-import path from 'path';
 
 import * as core from '@actions/core';
-import * as github from '@actions/github';
-import { ChecksUpdateParams, ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
-const { GITHUB_WORKSPACE } = process.env;
-const OWNER = github.context.repo.owner;
-const REPO = github.context.repo.repo;
-const CHECK_NAME = 'ESLint Report Analysis';
+import getPullRequestFilesChanged from './get-pr-files-changed';
+import ESLintJsonReportToJS from './eslint-json-report-to-js';
+import analyzeESLintReport from './analyze-eslint-js';
+import CONSTANTS from './constants';
 
-const getPrNumber = (): number | undefined => {
-  const pullRequest = github.context.payload.pull_request;
-
-  if (!pullRequest) {
-    return;
-  }
-
-  return pullRequest.number;
-};
-
-const getSha = (): string => {
-  const pullRequest = github.context.payload.pull_request;
-
-  if (!pullRequest) {
-    return github.context.sha;
-  }
-
-  return pullRequest.head.sha;
-};
-
-async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
-  const { repository } = await client.graphql(
-    `
-    query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
-      repository(owner: $owner, name: $repo) {
-        pullRequest(number: $prNumber) {
-          files(first: 100, after: $startCursor) {
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-            totalCount
-            edges {
-              cursor
-              node {
-                path
-              }
-            }
-          }
-        }
-      }
-    }
-  `,
-    { owner: OWNER, repo: REPO, prNumber, startCursor }
-  );
-
-  const pr = repository.pullRequest;
-
-  if (!pr || !pr.files) {
-    return { files: [] };
-  }
-
-  return {
-    ...pr.files.pageInfo,
-    files: pr.files.edges.map(e => e.node.path),
-  };
-}
-
-async function getChangedFiles(client: github.GitHub, prNumber: number): Promise<string[]> {
-  let files: string[] = [];
-  let hasNextPage = true;
-  let startCursor: string | undefined = undefined;
-
-  while (hasNextPage) {
-    try {
-      const result = await fetchFilesBatch(client, prNumber, startCursor);
-
-      files = files.concat(result.files);
-      hasNextPage = result.hasNextPage;
-      startCursor = result.endCursor;
-    } catch (err) {
-      core.error(err);
-      core.setFailed('Error occurred getting changed files.');
-      return files;
-    }
-  }
-
-  return files;
-}
-
-function analyzeReport(lintedFiles: Array<ESLintEntry>): ReportAnalysis {
-  let errorCount = 0;
-  let warningCount = 0;
-  let errorText = '';
-  let warningText = '';
-  let markdownText = '';
-
-  for (const result of lintedFiles) {
-    errorCount += result.errorCount;
-    warningCount += result.warningCount;
-    const { filePath, messages } = result;
-    for (const lintMessage of messages) {
-      const { line, endLine, severity, ruleId, message } = lintMessage;
-
-      const isWarning = severity < 2;
-
-      const filePathTrimmed = filePath.replace(`${GITHUB_WORKSPACE}/`, '');
-
-      const sha = getSha();
-
-      const link = `https://github.com/${OWNER}/${REPO}/blob/${sha}/${filePathTrimmed}#L${line}:L${endLine}`;
-
-      let messageText = '### [`' + filePathTrimmed + '` line `' + line + '`](' + link + ')\n';
-      messageText += '- Start Line: `' + line + '`\n';
-      messageText += '- End Line: `' + endLine + '`\n';
-      messageText += '- Message: ' + message + '\n';
-      messageText += '  - From: [`' + ruleId + '`]\n';
-
-      if (isWarning) {
-        warningText += messageText;
-      } else {
-        errorText += messageText;
-      }
-    }
-  }
-
-  if (errorText.length) {
-    markdownText += '## ' + errorCount + ' Error(s):\n';
-    markdownText += errorText + '\n';
-  }
-
-  if (warningText.length) {
-    markdownText += '## ' + warningCount + ' Warning(s):\n';
-    markdownText += warningText + '\n';
-  }
-
-  return {
-    errorCount: errorCount,
-    warningCount: warningCount,
-    markdown: markdownText,
-  };
-}
-
-function processReport(lintedFiles: Array<ESLintEntry>): Partial<ChecksUpdateParams> {
-  const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
-  let errorCount = 0;
-  let warningCount = 0;
-
-  for (const result of lintedFiles) {
-    const { filePath, messages } = result;
-
-    errorCount += result.errorCount;
-    warningCount += result.warningCount;
-
-    console.info(`Analyzing ${filePath}`);
-    for (const lintMessage of messages) {
-      const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
-
-      const isWarning = severity < 2;
-
-      const annotation: ChecksUpdateParamsOutputAnnotations = {
-        path: filePath.replace(`${GITHUB_WORKSPACE}/`, ''),
-        start_line: line,
-        end_line: endLine ? endLine : line,
-        annotation_level: isWarning ? 'warning' : 'failure',
-        message: `[${ruleId}] ${message}`,
-      };
-
-      // Start and end column can only be added if start_line and end_line are equal
-      if (line === endLine) {
-        annotation.start_column = column;
-        annotation.end_column = endColumn;
-      }
-
-      // See https://developer.github.com/v3/checks/runs/#annotations-object
-      annotations.push(annotation);
-    }
-  }
-
-  return {
-    conclusion: errorCount > 0 ? 'failure' : 'success',
-    output: {
-      title: CHECK_NAME,
-      summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
-      annotations,
-    },
-  };
-}
+const { CHECK_NAME, OCTOKIT, OWNER, PULL_REQUEST, REPO, SHA } = CONSTANTS;
 
 async function run(): Promise<void> {
-  const report = core.getInput('report-json', { required: true });
-  const reportPath = path.resolve(report);
-  if (!fs.existsSync(reportPath)) {
-    core.setFailed('The report-json file "${report}" could not be resolved.');
-  }
-  const reportContents = fs.readFileSync(reportPath, 'utf-8');
-  const reportJSON = JSON.parse(reportContents);
-  const token = core.getInput('repo-token', { required: true });
-  const prNumber = getPrNumber();
+  const reportJSON = ESLintJsonReportToJS();
+  const esLintAnalysis = analyzeESLintReport(reportJSON);
+  const conclusion = esLintAnalysis.success ? 'failure' : 'success';
+  const currentTimestamp = new Date().toISOString();
 
-  if (!prNumber) {
+  // If this is NOT a pull request
+  if (!PULL_REQUEST) {
+    /**
+     * Create and complete a GitHub check with the
+     * markdown contents of the report analysis.
+     */
     try {
-      const reportAnalysis = analyzeReport(reportJSON);
-      const octokit = new github.GitHub(token);
-      await octokit.checks.create({
+      await OCTOKIT.checks.create({
         owner: OWNER,
         repo: REPO,
-        started_at: new Date().toISOString(),
-        head_sha: getSha(),
-        completed_at: new Date().toISOString(),
+        started_at: currentTimestamp,
+        head_sha: SHA,
+        completed_at: currentTimestamp,
         status: 'completed',
         name: CHECK_NAME,
-        conclusion: reportAnalysis.errorCount > 0 ? 'failure' : 'success',
+        conclusion: conclusion,
         output: {
           title: CHECK_NAME,
-          summary: `${reportAnalysis.errorCount} error(s) and ${reportAnalysis.warningCount} warning(s) were found`,
-          text: reportAnalysis.markdown,
+          summary: esLintAnalysis.summary,
+          text: esLintAnalysis.markdown,
         },
       });
-      if (reportAnalysis.errorCount > 0) {
+
+      /**
+       * If there were any ESLint errors
+       * fail the GitHub Action and exit
+       */
+      if (esLintAnalysis.errorCount > 0) {
         core.setFailed('ESLint errors detected.');
         process.exit(1);
       } else {
@@ -232,79 +59,94 @@ async function run(): Promise<void> {
     return;
   }
 
+  /**
+   * Otherwise, if this IS a pull request
+   * create a GitHub check and add any
+   * annotations in batches to the check,
+   * then close the check.
+   */
+  core.debug('Fetching files changed in the pull request.');
+  const changedFiles = await getPullRequestFilesChanged();
+
+  if (changedFiles.length <= 0) {
+    core.info('No files changed in the pull request.');
+    process.exit(0);
+  }
+
+  // Wrap API calls in try/catch in case there are issues
   try {
-    const octokit = new github.GitHub(token);
-    core.debug('Fetching files changed in the pull request.');
-    const files = await getChangedFiles(octokit, prNumber);
+    /**
+     * Create a new GitHub check and leave it in-progress
+     * See https://OCTOKIT.github.io/rest.js/#octokit-routes-checks
+     */
+    const {
+      data: { id: checkId },
+    } = await OCTOKIT.checks.create({
+      owner: OWNER,
+      repo: REPO,
+      started_at: currentTimestamp,
+      head_sha: SHA,
+      status: 'in_progress',
+      name: CHECK_NAME,
+    });
 
-    if (files.length > 0) {
-      const {
-        data: { id: checkId },
-      } = await octokit.checks.create({
+    /**
+     * Update the GitHub check with the
+     * annotations from the report analysis.
+     *
+     * If there are more than 50 annotations
+     * we need to make multiple API requests
+     * to avoid rate limiting errors
+     *
+     * See https://developer.github.com/v3/checks/runs/#output-object-1
+     */
+    const numberOfAnnotations = esLintAnalysis.annotations.length;
+    let batch = 0;
+    while (esLintAnalysis.annotations.length > 50) {
+      batch++;
+      const fiftyAnnotations = esLintAnalysis.annotations?.splice(0, 50);
+      await OCTOKIT.checks.update({
         owner: OWNER,
         repo: REPO,
-        started_at: new Date().toISOString(),
-        head_sha: getSha(),
-        status: 'in_progress',
-        name: CHECK_NAME,
-      });
-
-      const payload = processReport(reportJSON);
-
-      if (undefined === payload || undefined === payload.output) {
-        return;
-      }
-
-      /**
-       * If there are more than 50 annotations
-       * we need to make multiple API requests
-       * to avoid rate limiting errors
-       *
-       * See https://developer.github.com/v3/checks/runs/#output-object-1
-       */
-      if (undefined === payload.output.annotations) {
-        payload.output.annotations = [];
-      }
-
-      const numberOfAnnotations = payload.output.annotations.length;
-      let batch = 0;
-      while (payload.output.annotations.length > 50) {
-        batch++;
-        const fiftyAnnotations = payload.output.annotations?.splice(0, 50);
-        await octokit.checks.update({
-          owner: OWNER,
-          repo: REPO,
-          check_run_id: checkId,
-          status: 'in_progress',
-          output: {
-            title: CHECK_NAME,
-            summary: `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch}...`,
-            annotations: fiftyAnnotations,
-          },
-        });
-      }
-
-      // See https://octokit.github.io/rest.js/#octokit-routes-checks
-      await octokit.checks.update({
-        owner: OWNER,
-        repo: REPO,
-        completed_at: new Date().toISOString(),
-        status: 'completed',
         check_run_id: checkId,
-        ...payload,
+        status: 'in_progress',
+        output: {
+          title: CHECK_NAME,
+          summary: `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch}...`,
+          annotations: fiftyAnnotations,
+        },
       });
+    }
 
-      if (payload.conclusion === 'failure') {
-        core.setFailed('ESLint errors detected.');
-        process.exit(1);
-      } else {
-        process.exit(0);
-      }
+    /**
+     * Finally, close the GitHub check as completed
+     * with any remaining annotations
+     */
+    await OCTOKIT.checks.update({
+      conclusion: conclusion,
+      owner: OWNER,
+      repo: REPO,
+      completed_at: currentTimestamp,
+      status: 'completed',
+      check_run_id: checkId,
+      output: {
+        title: CHECK_NAME,
+        summary: esLintAnalysis.summary,
+        annotations: esLintAnalysis.annotations,
+      },
+    });
+
+    // Fail the action if lint analysis was not successful
+    if (!esLintAnalysis.success) {
+      core.setFailed('ESLint errors detected.');
+      process.exit(1);
     } else {
-      core.info('No files changed in the PR.');
+      process.exit(0);
     }
   } catch (err) {
-    core.setFailed(err.message ? err.message : 'Error comparing changed files to the provided ESLint report.');
+    // Catch any errors from API calls and fail the action
+    core.setFailed(err.message ? err.message : 'Error annotating files in the pull request from the ESLint report.');
+    process.exit(1);
   }
 }
 

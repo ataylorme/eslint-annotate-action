@@ -1,0 +1,68 @@
+import * as core from '@actions/core';
+import * as github from '@actions/github';
+
+import { PrResponse } from './types';
+import CONSTANTS from './constants';
+
+const { OWNER, PR_NUMBER, REPO, OCTOKIT } = CONSTANTS;
+
+async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
+  const { repository } = await client.graphql(
+    `
+    query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
+      repository(owner: $owner, name: $repo) {
+        pullRequest(number: $prNumber) {
+          files(first: 100, after: $startCursor) {
+            pageInfo {
+              hasNextPage
+              endCursor
+            }
+            totalCount
+            edges {
+              cursor
+              node {
+                path
+              }
+            }
+          }
+        }
+      }
+    }
+  `,
+    { owner: OWNER, repo: REPO, prNumber, startCursor }
+  );
+
+  const pr = repository.pullRequest;
+
+  if (!pr || !pr.files) {
+    return { files: [] };
+  }
+
+  return {
+    ...pr.files.pageInfo,
+    files: pr.files.edges.map(e => e.node.path),
+  };
+}
+
+export default async function getPullRequestFilesChanged(): Promise<string[]> {
+  core.debug('Fetching files changed in the pull request.');
+  let files: string[] = [];
+  let hasNextPage = true;
+  let startCursor: string | undefined = undefined;
+
+  while (hasNextPage) {
+    try {
+      const result = await fetchFilesBatch(OCTOKIT, PR_NUMBER, startCursor);
+
+      files = files.concat(result.files);
+      hasNextPage = result.hasNextPage;
+      startCursor = result.endCursor;
+    } catch (err) {
+      core.error(err);
+      core.setFailed('Error occurred getting files changes in the pull request.');
+      return files;
+    }
+  }
+
+  return files;
+}
