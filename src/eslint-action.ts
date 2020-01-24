@@ -103,9 +103,10 @@ async function run(): Promise<void> {
     const annotations = esLintAnalysis.annotations;
     const numberOfAnnotations = annotations.length;
     let batch = 0;
-    const batchSize = 25;
+    const batchSize = 50;
     const numBatches = Math.ceil(numberOfAnnotations / batchSize);
-    while (annotations.length >= batchSize) {
+    while (annotations.length && batch <= numBatches) {
+      // Increment the current batch number
       batch++;
       const batchMessage = `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch} of ${numBatches}...`;
       core.info(batchMessage);
