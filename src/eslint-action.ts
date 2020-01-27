@@ -17,7 +17,7 @@ const { CHECK_NAME, OCTOKIT, OWNER, PULL_REQUEST, REPO, SHA } = CONSTANTS;
 async function run(): Promise<void> {
   const reportJSON = ESLintJsonReportToJS();
   const esLintAnalysis = analyzeESLintReport(reportJSON);
-  const conclusion = esLintAnalysis.success ? 'failure' : 'success';
+  const conclusion = esLintAnalysis.success ? 'success' : 'failure';
   const currentTimestamp = new Date().toISOString();
 
   // If this is NOT a pull request
