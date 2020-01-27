@@ -4355,9 +4355,6 @@ function run() {
                     core.setFailed('ESLint errors detected.');
                     process.exit(1);
                 }
-                else {
-                    process.exit(0);
-                }
             }
             catch (err) {
                 core.setFailed(err.message ? err.message : 'Error analyzing the provided ESLint report.');
@@ -4373,8 +4370,8 @@ function run() {
         core.debug('Fetching files changed in the pull request.');
         const changedFiles = yield get_pr_files_changed_1.default();
         if (changedFiles.length <= 0) {
-            core.info('No files changed in the pull request.');
-            process.exit(0);
+            core.setFailed('No files changed in the pull request.');
+            process.exit(1);
         }
         // Wrap API calls in try/catch in case there are issues
         try {
@@ -4444,9 +4441,6 @@ function run() {
             if (!esLintAnalysis.success) {
                 core.setFailed('ESLint errors detected.');
                 process.exit(1);
-            }
-            else {
-                process.exit(0);
             }
         }
         catch (err) {

@@ -50,8 +50,6 @@ async function run(): Promise<void> {
       if (esLintAnalysis.errorCount > 0) {
         core.setFailed('ESLint errors detected.');
         process.exit(1);
-      } else {
-        process.exit(0);
       }
     } catch (err) {
       core.setFailed(err.message ? err.message : 'Error analyzing the provided ESLint report.');
@@ -69,8 +67,8 @@ async function run(): Promise<void> {
   const changedFiles = await getPullRequestFilesChanged();
 
   if (changedFiles.length <= 0) {
-    core.info('No files changed in the pull request.');
-    process.exit(0);
+    core.setFailed('No files changed in the pull request.');
+    process.exit(1);
   }
 
   // Wrap API calls in try/catch in case there are issues
@@ -146,8 +144,6 @@ async function run(): Promise<void> {
     if (!esLintAnalysis.success) {
       core.setFailed('ESLint errors detected.');
       process.exit(1);
-    } else {
-      process.exit(0);
     }
   } catch (err) {
     // Catch any errors from API calls and fail the action
