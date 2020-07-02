@@ -74,7 +74,9 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
        */
       if (line === endLine) {
         annotation.start_column = column;
-        annotation.end_column = endColumn;
+        if (endColumn !== null) {
+          annotation.end_column = endColumn;
+        }
       }
 
       // Add the annotation object to the array
