@@ -22,7 +22,7 @@ interface ESLintMessage {
   column: number;
   nodeType: string | null;
   endLine: number;
-  endColumn: number;
+  endColumn: number | null;
   fix: {
     range: Array<number>;
     test: string;
