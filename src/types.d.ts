@@ -1,8 +1,8 @@
 import { ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
 declare module '@octokit/graphql' {
-  export type Variables = any
-  export type GraphQlQueryResponse = any
+  export type Variables = any;
+  export type GraphQlQueryResponse = any;
 }
 
 declare namespace NodeJS {
