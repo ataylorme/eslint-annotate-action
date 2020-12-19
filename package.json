@@ -8,6 +8,7 @@
     "postbuild": "ncc build lib/eslint-action.js",
     "test": "jest",
     "lint": "eslint --ext .ts src",
+    "lint:fix": "eslint --fix --ext .ts src",
     "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json src"
   },
   "repository": {
