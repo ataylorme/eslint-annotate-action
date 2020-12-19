@@ -3996,7 +3996,9 @@ function analyzeESLintReport(lintedFiles) {
              * annotation if start_line and end_line are equal
              */
             if (line === endLine) {
-                annotation.start_column = column;
+                if (column !== null) {
+                    annotation.start_column = column;
+                }
                 if (endColumn !== null) {
                     annotation.end_column = endColumn;
                 }

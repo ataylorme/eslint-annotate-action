@@ -1,5 +1,10 @@
 import { ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
+declare module '@octokit/graphql' {
+  export type Variables = any
+  export type GraphQlQueryResponse = any
+}
+
 declare namespace NodeJS {
   export interface ProcessEnv {
     GITHUB_ACTION: string;
@@ -19,7 +24,7 @@ interface ESLintMessage {
   severity: number;
   message: string;
   line: number;
-  column: number;
+  column: number | null;
   nodeType: string | null;
   endLine: number;
   endColumn: number | null;
