@@ -1,5 +1,7 @@
 # ESLint Annotate from Report JSON
 
+## Version `1.1.3`
+
 ## Description
 
 Analyzes an ESLint a report JSON file and posts the results.
@@ -32,15 +34,15 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - name: Node.JS 10.x
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - name: Node.JS 14
+        uses: actions/setup-node@v2
         with:
-          node-version: "10.x"
+          node-version: 14
       - name: Cache node modules
         uses: actions/cache@v1
         with:
-          path: node_modules
+          path: ~/.npm
           key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
           restore-keys: |
             ${{ runner.OS }}-build-${{ env.cache-name }}-
@@ -60,12 +62,12 @@ jobs:
         # Continue to the next step even if this fails
         continue-on-error: true
       - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@1.1.2
+        uses: ataylorme/eslint-annotate-action@1.1.3
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
       - name: Upload ESLint report
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: eslint_report.json
           path: eslint_report.json
