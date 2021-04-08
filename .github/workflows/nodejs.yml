@@ -13,11 +13,11 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v1
-      - name: Node.JS 12.x
-        uses: actions/setup-node@v1
+      - uses: actions/checkout@v2
+      - name: Node.JS 14
+        uses: actions/setup-node@v2
         with:
-          node-version: "12.x"
+          node-version: 14
       - name: Cache node modules
         uses: actions/cache@v1
         with:
@@ -43,7 +43,7 @@ jobs:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
       - name: Upload ESLint report
-        uses: actions/upload-artifact@v1
+        uses: actions/upload-artifact@v2
         with:
           name: eslint_report.json
           path: eslint_report.json
