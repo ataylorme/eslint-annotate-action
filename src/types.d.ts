@@ -1,10 +1,4 @@
 import { ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
-
-declare module '@octokit/graphql' {
-  export type Variables = any;
-  export type GraphQlQueryResponse = any;
-}
-
 declare namespace NodeJS {
   export interface ProcessEnv {
     GITHUB_ACTION: string;
