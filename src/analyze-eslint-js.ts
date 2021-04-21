@@ -12,6 +12,8 @@ import { ESLintReport, AnalyzedESLintReport } from './types';
 import CONSTANTS from './constants';
 
 const { GITHUB_WORKSPACE, OWNER, REPO, SHA } = CONSTANTS;
+const failOnWarningInput = core.getInput('fail-on-warning') || '';
+const failOnWarning = failOnWarningInput === 'true';
 
 export default function analyzeESLintReport(lintedFiles: ESLintReport): AnalyzedESLintReport {
   // Start the error and warning counts at 0
@@ -117,12 +119,17 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
     markdownText += warningText + '\n';
   }
 
+  let success = errorCount === 0;
+  if (failOnWarning && warningCount > 0) {
+    success = false;
+  }
+
   // Return the ESLint report analysis
   return {
     errorCount: errorCount,
     warningCount: warningCount,
     markdown: markdownText,
-    success: errorCount === 0,
+    success,
     summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
     annotations: annotations,
   };

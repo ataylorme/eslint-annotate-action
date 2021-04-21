@@ -3909,7 +3909,7 @@ const fs_1 = __importDefault(__webpack_require__(747));
 const path_1 = __importDefault(__webpack_require__(622));
 const core = __importStar(__webpack_require__(470));
 function ESLintJsonReportToJS() {
-    const report = core.getInput('report-json', { required: true });
+    const report = core.getInput('report-json', { required: false }) || 'eslint_report.json';
     const reportPath = path_1.default.resolve(report);
     if (!fs_1.default.existsSync(reportPath)) {
         core.setFailed('The report-json file "${report}" could not be resolved.');
@@ -3947,6 +3947,8 @@ Object.defineProperty(exports, "__esModule", { value: true });
 const core = __importStar(__webpack_require__(470));
 const constants_1 = __importDefault(__webpack_require__(32));
 const { GITHUB_WORKSPACE, OWNER, REPO, SHA } = constants_1.default;
+const failOnWarningInput = core.getInput('fail-on-warning') || '';
+const failOnWarning = failOnWarningInput === 'true';
 function analyzeESLintReport(lintedFiles) {
     // Start the error and warning counts at 0
     let errorCount = 0;
@@ -4034,12 +4036,16 @@ function analyzeESLintReport(lintedFiles) {
         markdownText += '## ' + warningCount + ' Warning(s):\n';
         markdownText += warningText + '\n';
     }
+    let success = errorCount === 0;
+    if (failOnWarning && warningCount > 0) {
+        success = false;
+    }
     // Return the ESLint report analysis
     return {
         errorCount: errorCount,
         warningCount: warningCount,
         markdown: markdownText,
-        success: errorCount === 0,
+        success,
         summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
         annotations: annotations,
     };
@@ -4443,7 +4449,7 @@ function run() {
             });
             // Fail the action if lint analysis was not successful
             if (!esLintAnalysis.success) {
-                core.setFailed('ESLint errors detected.');
+                core.setFailed('ESLint issues detected.');
                 process.exit(1);
             }
         }
