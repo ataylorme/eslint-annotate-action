@@ -1,6 +1,6 @@
 # ESLint Annotate from Report JSON
 
-## Version `1.1.3`
+## Version `1.2.0`
 
 ## Description
 
@@ -19,6 +19,15 @@ On `push` creates a `ESLint Report Analysis` with a summary of errors and warnin
 The others I tried to use ran ESLint in NodeJS themselves. With this action, I can take an ESLint report generated from the command line and process the results.
 
 This allows for more flexibility on how ESLint is run. This action is agnostic enough to handle different configurations, extensions, etc. across projects without making assumptions on how ESLint should be run.
+
+## Inputs
+
+| Name | Description | Required | Default Value |
+|---|---|---|---|
+| `repo-token` | The [`GITHUB_TOKEN` secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#about-the-github_token-secret) | **Yes** | N/A |
+| `report-json` | The path to the ESLint report JSON file | No | `eslint_report.json` |
+| `only-pr-files` | Only annotate files changed when run on the `pull_request` event | No | `true` |
+| `fail-on-warning` | Fail the GitHub Action when ESLint warnings are detected. Set to `true` to enable. | No | `false` |
 
 ## Usage Example
 
@@ -62,7 +71,7 @@ jobs:
         # Continue to the next step even if this fails
         continue-on-error: true
       - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@1.1.3
+        uses: ataylorme/eslint-annotate-action@1.2.0
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"

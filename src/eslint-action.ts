@@ -142,7 +142,7 @@ async function run(): Promise<void> {
 
     // Fail the action if lint analysis was not successful
     if (!esLintAnalysis.success) {
-      core.setFailed('ESLint errors detected.');
+      core.setFailed('ESLint issues detected.');
       process.exit(1);
     }
   } catch (err) {
