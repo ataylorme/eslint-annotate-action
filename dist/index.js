@@ -3976,6 +3976,13 @@ function analyzeESLintReport(lintedFiles) {
         warningCount += result.warningCount;
         // Loop through all the error/warning messages for the file
         for (const lintMessage of messages) {
+            /**
+             * A warning from ESLint doesn't return line and endline information
+             * https://eslint.org/docs/user-guide/configuring/ignoring-code#ignored-file-warnings
+             */
+            if (lintMessage.line === undefined) {
+                continue;
+            }
             // Pull out information about the error/warning message
             const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
             // Check if it a warning or error
