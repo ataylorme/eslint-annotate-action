@@ -14,19 +14,10 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Node.JS 14
+      - name: Node.JS 16
         uses: actions/setup-node@v2
         with:
-          node-version: 14
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-${{ env.cache-name }}-
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
+          node-version: 16
       - name: Install Node Dependencies
         run: npm ci
         env:
@@ -40,7 +31,6 @@ jobs:
       - name: Annotate Code Linting Results
         uses: ./
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
       - name: Upload ESLint report
         uses: actions/upload-artifact@v2
