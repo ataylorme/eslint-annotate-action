@@ -3,22 +3,24 @@
  * GitHub API doesn't use it.
  * See https://developer.github.com/v3/checks/runs/#annotations-object-1
  */
-/* eslint-disable @typescript-eslint/camelcase */
 
 import * as core from '@actions/core';
+import { Octokit } from '@octokit/action';
 
 import getPullRequestFilesChanged from './get-pr-files-changed';
 import ESLintJsonReportToJS from './eslint-json-report-to-js';
 import analyzeESLintReport from './analyze-eslint-js';
 import CONSTANTS from './constants';
 
-const { CHECK_NAME, OCTOKIT, OWNER, PULL_REQUEST, REPO, SHA } = CONSTANTS;
+const { CHECK_NAME, OWNER, PULL_REQUEST, REPO, SHA } = CONSTANTS;
 
 async function run(): Promise<void> {
   const reportJSON = ESLintJsonReportToJS();
   const esLintAnalysis = analyzeESLintReport(reportJSON);
   const conclusion = esLintAnalysis.success ? 'success' : 'failure';
   const currentTimestamp = new Date().toISOString();
+
+  const octokit = new Octokit();
 
   // If this is NOT a pull request
   if (!PULL_REQUEST) {
@@ -27,7 +29,7 @@ async function run(): Promise<void> {
      * markdown contents of the report analysis.
      */
     try {
-      await OCTOKIT.checks.create({
+      await octokit.checks.create({
         owner: OWNER,
         repo: REPO,
         started_at: currentTimestamp,
@@ -52,7 +54,8 @@ async function run(): Promise<void> {
         process.exit(1);
       }
     } catch (err) {
-      core.setFailed(err.message ? err.message : 'Error analyzing the provided ESLint report.');
+      const msg = err instanceof Error ? err.message : 'Error analyzing the provided ESLint report.';
+      core.setFailed(msg);
     }
     return;
   }
@@ -64,7 +67,7 @@ async function run(): Promise<void> {
    * then close the check.
    */
   core.debug('Fetching files changed in the pull request.');
-  const changedFiles = await getPullRequestFilesChanged();
+  const changedFiles = await getPullRequestFilesChanged(octokit);
 
   if (changedFiles.length <= 0) {
     core.setFailed('No files changed in the pull request.');
@@ -79,7 +82,7 @@ async function run(): Promise<void> {
      */
     const {
       data: { id: checkId },
-    } = await OCTOKIT.checks.create({
+    } = await octokit.checks.create({
       owner: OWNER,
       repo: REPO,
       started_at: currentTimestamp,
@@ -109,7 +112,7 @@ async function run(): Promise<void> {
       const batchMessage = `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch} of ${numBatches}...`;
       core.info(batchMessage);
       const annotationBatch = annotations.splice(0, batchSize);
-      await OCTOKIT.checks.update({
+      await octokit.checks.update({
         owner: OWNER,
         repo: REPO,
         check_run_id: checkId,
@@ -126,7 +129,7 @@ async function run(): Promise<void> {
      * Finally, close the GitHub check as completed
      * with any remaining annotations
      */
-    await OCTOKIT.checks.update({
+    await octokit.checks.update({
       conclusion: conclusion,
       owner: OWNER,
       repo: REPO,
@@ -146,10 +149,14 @@ async function run(): Promise<void> {
       process.exit(1);
     }
   } catch (err) {
+    const msg =
+      err instanceof Error ? err.message : 'Error annotating files in the pull request from the ESLint report.';
     // Catch any errors from API calls and fail the action
-    core.setFailed(err.message ? err.message : 'Error annotating files in the pull request from the ESLint report.');
+    core.setFailed(msg);
     process.exit(1);
   }
 }
 
-run();
+run().catch(() => {
+  process.exit(1);
+});

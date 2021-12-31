@@ -3,12 +3,10 @@
  * GitHub API doesn't use it.
  * See https://developer.github.com/v3/checks/runs/#annotations-object-1
  */
-/* eslint-disable @typescript-eslint/camelcase */
 
 import * as core from '@actions/core';
-import { ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
 
-import { ESLintReport, AnalyzedESLintReport } from './types';
+import { ESLintReport, AnalyzedESLintReport, AnnotationProperties } from './types';
 import CONSTANTS from './constants';
 
 const { GITHUB_WORKSPACE, OWNER, REPO, SHA } = CONSTANTS;
@@ -26,7 +24,7 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
   let markdownText = '';
 
   // Create an array for annotations
-  const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
+  const annotations: AnnotationProperties[] = [];
 
   // Lopp through all linted files in the report
   for (const result of lintedFiles) {
@@ -62,7 +60,7 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
        * Create a GitHub annotation object for the error/warning
        * See https://developer.github.com/v3/checks/runs/#annotations-object
        */
-      const annotation: ChecksUpdateParamsOutputAnnotations = {
+      const annotation: AnnotationProperties = {
         path: filePathTrimmed,
         start_line: line,
         end_line: endLine ? endLine : line,
@@ -92,11 +90,14 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
        */
       const link = `https://github.com/${OWNER}/${REPO}/blob/${SHA}/${filePathTrimmed}#L${line}:L${endLine}`;
 
-      let messageText = '### [`' + filePathTrimmed + '` line `' + line + '`](' + link + ')\n';
-      messageText += '- Start Line: `' + line + '`\n';
-      messageText += '- End Line: `' + endLine + '`\n';
-      messageText += '- Message: ' + message + '\n';
-      messageText += '  - From: [`' + ruleId + '`]\n';
+      const messageText = [
+        `### [${filePathTrimmed} line ${line}](${link})`,
+        `- Start Line: ${line}`,
+        `- End Lint: ${endLine}`,
+        `- Message: ${message}`,
+        `  - From: [${ruleId}]`,
+        ``,
+      ].join('\n');
 
       // Add the markdown text to the appropriate placeholder
       if (isWarning) {
@@ -109,14 +110,12 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
 
   // If there is any markdown error text, add it to the markdown output
   if (errorText.length) {
-    markdownText += '## ' + errorCount + ' Error(s):\n';
-    markdownText += errorText + '\n';
+    markdownText += `## ${errorCount} Error(s):\n${errorText}\n`;
   }
 
   // If there is any markdown warning text, add it to the markdown output
   if (warningText.length) {
-    markdownText += '## ' + warningCount + ' Warning(s):\n';
-    markdownText += warningText + '\n';
+    markdownText += `## ${warningCount} Warning(s):\n${warningText}\n`;
   }
 
   let success = errorCount === 0;

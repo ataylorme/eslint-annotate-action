@@ -12,5 +12,5 @@ export default function ESLintJsonReportToJS(): ESLintReport {
     core.setFailed(`The report-json file "${report}" could not be resolved.`);
   }
   const reportContents = fs.readFileSync(reportPath, 'utf-8');
-  return JSON.parse(reportContents);
+  return JSON.parse(reportContents) as ESLintReport;
 }

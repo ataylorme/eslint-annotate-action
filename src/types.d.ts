@@ -1,15 +1,13 @@
-import { ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
+import { type Endpoints } from '@octokit/types';
+
+type CheckRunParameters = Endpoints['POST /repos/{owner}/{repo}/check-runs']['parameters'];
+export type AnnotationProperties = Required<Required<CheckRunParameters>['output']>['annotations'][0];
+
 declare namespace NodeJS {
   export interface ProcessEnv {
     GITHUB_ACTION: string;
     GITHUB_WORKSPACE: string;
   }
-}
-
-interface PrResponse {
-  endCursor?: string;
-  hasNextPage?: boolean;
-  files: Array<string>;
 }
 
 interface ESLintMessage {
@@ -52,5 +50,5 @@ interface AnalyzedESLintReport {
   success: boolean;
   markdown: string;
   summary: string;
-  annotations: Array<ChecksUpdateParamsOutputAnnotations>;
+  annotations: Array<AnnotationProperties>;
 }

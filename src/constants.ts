@@ -1,9 +1,8 @@
 import * as github from '@actions/github';
-import * as core from '@actions/core';
+import { PullRequestEvent, PullRequest } from '@octokit/webhooks-types';
 
-const token = core.getInput('repo-token', { required: true });
-const octokit = new github.GitHub(token);
-const pullRequest = github.context.payload.pull_request;
+const pullRequestEvent: PullRequestEvent = github.context.payload as PullRequestEvent;
+const pullRequest: PullRequest = pullRequestEvent.pull_request;
 
 const getPrNumber = (): number => {
   if (!pullRequest) {
@@ -27,8 +26,6 @@ export default {
   PULL_REQUEST: pullRequest,
   PR_NUMBER: getPrNumber(),
   CHECK_NAME: 'ESLint Report Analysis',
-  GITHUB_WORKSPACE: process.env.GITHUB_WORKSPACE,
-  TOKEN: token,
-  OCTOKIT: octokit,
+  GITHUB_WORKSPACE: process.env.GITHUB_WORKSPACE ?? process.cwd(),
   SHA: getSha(),
 };

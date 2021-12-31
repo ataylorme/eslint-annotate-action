@@ -1,65 +1,59 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
+import { Octokit } from '@octokit/action';
 
-import { PrResponse } from './types';
 import CONSTANTS from './constants';
 
-const { OWNER, PR_NUMBER, REPO, OCTOKIT } = CONSTANTS;
+const { OWNER, PR_NUMBER, REPO } = CONSTANTS;
 
-async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
-  const { repository } = await client.graphql(
-    `
-    query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
-      repository(owner: $owner, name: $repo) {
-        pullRequest(number: $prNumber) {
-          files(first: 100, after: $startCursor) {
-            pageInfo {
-              hasNextPage
-              endCursor
-            }
-            totalCount
-            edges {
-              cursor
-              node {
-                path
-              }
-            }
+const PR_FILES_QUERY = `
+query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
+  repository(owner: $owner, name: $repo) {
+    pullRequest(number: $prNumber) {
+      files(first: 100, after: $startCursor) {
+        pageInfo {
+          hasNextPage
+          endCursor
+        }
+        totalCount
+        edges {
+          cursor
+          node {
+            path
           }
         }
       }
     }
-  `,
-    { owner: OWNER, repo: REPO, prNumber, startCursor }
-  );
-
-  const pr = repository.pullRequest;
-
-  if (!pr || !pr.files) {
-    return { files: [] };
   }
-
-  return {
-    ...pr.files.pageInfo,
-    files: pr.files.edges.map(e => e.node.path),
+}
+`;
+interface PrFilesQueryResponse {
+  repository: {
+    pullRequest?: {
+      endCursor?: string;
+      hasNextPage?: boolean;
+      files: Array<string>;
+    };
   };
 }
 
-export default async function getPullRequestFilesChanged(): Promise<string[]> {
+export default async function getPullRequestFilesChanged(client: Octokit): Promise<string[]> {
   core.debug('Fetching files changed in the pull request.');
   let files: string[] = [];
-  let hasNextPage = true;
-  let startCursor: string | undefined = undefined;
+  const hasNextPage = true;
 
-  while (hasNextPage) {
+  for (let cursorPos = 1; hasNextPage; ) {
     try {
-      const result = await fetchFilesBatch(OCTOKIT, PR_NUMBER, startCursor);
-
-      files = files.concat(result.files);
-      hasNextPage = result.hasNextPage;
-      startCursor = result.endCursor;
+      const result: PrFilesQueryResponse = await client.graphql(PR_FILES_QUERY, {
+        owner: OWNER,
+        repo: REPO,
+        prNumber: PR_NUMBER,
+        startCursor: cursorPos,
+      });
+      files = files.concat(result.repository.pullRequest?.files || []);
     } catch (err) {
       // Catch any errors from API calls and fail the action
-      core.error(err);
+      const e = typeof err === 'string' ? err : err instanceof Error ? err : 'Error retrieveing pull request files';
+      core.error(e);
       core.setFailed('Error occurred getting files changes in the pull request.');
       process.exit(1);
     }
