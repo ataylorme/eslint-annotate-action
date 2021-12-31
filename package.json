@@ -6,7 +6,6 @@
   "scripts": {
     "build": "tsc",
     "postbuild": "ncc build lib/eslint-action.js",
-    "test": "jest",
     "lint": "eslint --ext .ts src",
     "lint:fix": "eslint --fix --ext .ts src",
     "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json src"
@@ -27,7 +26,6 @@
   },
   "devDependencies": {
     "@types/eslint": "^6.1.3",
-    "@types/jest": "^24.9.1",
     "@types/node": "^13.5.0",
     "@typescript-eslint/eslint-plugin": "^2.6.1",
     "@typescript-eslint/parser": "^2.6.1",
@@ -36,9 +34,7 @@
     "eslint-config-prettier": "^6.5.0",
     "eslint-plugin-import": "^2.18.2",
     "eslint-plugin-prettier": "^3.1.1",
-    "jest": "^25.1.0",
     "prettier": "^1.18.2",
-    "ts-jest": "^25.0.0",
     "typescript": "^3.7.2"
   }
 }
