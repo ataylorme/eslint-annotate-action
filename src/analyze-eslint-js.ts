@@ -51,6 +51,9 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
     for (const lintMessage of messages) {
       // Pull out information about the error/warning message
       const { line, endLine, column, endColumn, severity, ruleId, message } = lintMessage;
+      
+      // If there's no rule ID (e.g. an ignored file warning), skip. 
+      if (!ruleId) break;
 
       // Check if it a warning or error
       const isWarning = severity < 2;
