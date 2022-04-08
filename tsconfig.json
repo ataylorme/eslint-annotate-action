@@ -8,7 +8,8 @@
     "noImplicitAny": false,
     "esModuleInterop": true,
     "declaration": true,
-    "sourceMap": true
+    "sourceMap": true,
+    "skipLibCheck": true
   },
   "exclude": ["node_modules", "**/*.spec.ts", "lib"],
   "include": ["**/*.ts"]

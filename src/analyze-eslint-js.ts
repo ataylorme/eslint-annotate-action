@@ -6,7 +6,7 @@
 /* eslint-disable @typescript-eslint/camelcase */
 
 import * as core from '@actions/core';
-import { ChecksUpdateParamsOutputAnnotations } from '@octokit/rest';
+import { Octokit } from '@octokit/rest';
 
 import { ESLintReport, AnalyzedESLintReport } from './types';
 import CONSTANTS from './constants';
@@ -26,7 +26,7 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
   let markdownText = '';
 
   // Create an array for annotations
-  const annotations: ChecksUpdateParamsOutputAnnotations[] = [];
+  const annotations: Octokit.ChecksUpdateParamsOutputAnnotations[] = [];
 
   // Lopp through all linted files in the report
   for (const result of lintedFiles) {
@@ -62,7 +62,7 @@ export default function analyzeESLintReport(lintedFiles: ESLintReport): Analyzed
        * Create a GitHub annotation object for the error/warning
        * See https://developer.github.com/v3/checks/runs/#annotations-object
        */
-      const annotation: ChecksUpdateParamsOutputAnnotations = {
+      const annotation: Octokit.ChecksUpdateParamsOutputAnnotations = {
         path: filePathTrimmed,
         start_line: line,
         end_line: endLine ? endLine : line,

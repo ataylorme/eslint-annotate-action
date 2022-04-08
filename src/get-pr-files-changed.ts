@@ -1,13 +1,12 @@
 import * as core from '@actions/core';
-import * as github from '@actions/github';
 
 import { PrResponse } from './types';
 import CONSTANTS from './constants';
 
 const { OWNER, PR_NUMBER, REPO, OCTOKIT } = CONSTANTS;
 
-async function fetchFilesBatch(client: github.GitHub, prNumber: number, startCursor?: string): Promise<PrResponse> {
-  const { repository } = await client.graphql(
+async function fetchFilesBatch(prNumber: number, startCursor?: string): Promise<PrResponse> {
+  const { repository } = await OCTOKIT.graphql(
     `
     query ChangedFilesbatch($owner: String!, $repo: String!, $prNumber: Int!, $startCursor: String) {
       repository(owner: $owner, name: $repo) {
@@ -52,7 +51,7 @@ export default async function getPullRequestFilesChanged(): Promise<string[]> {
 
   while (hasNextPage) {
     try {
-      const result = await fetchFilesBatch(OCTOKIT, PR_NUMBER, startCursor);
+      const result = await fetchFilesBatch(PR_NUMBER, startCursor);
 
       files = files.concat(result.files);
       hasNextPage = result.hasNextPage;

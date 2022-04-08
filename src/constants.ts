@@ -1,8 +1,9 @@
 import * as github from '@actions/github';
+import { GitHub, getOctokitOptions } from '@actions/github/lib/utils';
 import * as core from '@actions/core';
 
 const token = core.getInput('repo-token', { required: true });
-const octokit = new github.GitHub(token);
+const octokit = new GitHub(getOctokitOptions(token));
 const pullRequest = github.context.payload.pull_request;
 
 const getPrNumber = (): number => {
