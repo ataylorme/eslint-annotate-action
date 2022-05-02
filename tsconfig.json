@@ -1,15 +1,20 @@
 {
   "compilerOptions": {
-    "target": "es6",
+    "lib": ["ES2019"],
     "module": "commonjs",
+    "target": "ES2019",
+    "strict": true,
+    "esModuleInterop": true,
+    "skipLibCheck": true,
+    "noUnusedLocals": true,
+    "noUnusedParameters": true,
+    "noImplicitAny": true,
+    "removeComments": false,
+    "preserveConstEnums": true,
     "outDir": "./lib",
     "rootDir": "./src",
-    "strict": true,
-    "noImplicitAny": false,
-    "esModuleInterop": true,
-    "declaration": true,
-    "sourceMap": true
+    "moduleResolution": "node"
   },
-  "exclude": ["node_modules", "**/*.spec.ts", "lib"],
-  "include": ["**/*.ts"]
+  "include": [".github/actions/**/*.ts", "**/*.ts"],
+  "exclude": ["node_modules"]
 }

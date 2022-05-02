@@ -4,8 +4,9 @@
   "description": "A GitHub action that takes ESLint results from a JSON file and adds them as annotated pull request comments",
   "main": "dist/index.js",
   "scripts": {
-    "build": "tsc",
-    "postbuild": "ncc build lib/eslint-action.js",
+    "build": "ncc build src/index.ts",
+    "prestart": "npm run build",
+    "start": "node dist/index.js",
     "test": "jest",
     "lint": "eslint --ext .ts src",
     "lint:fix": "eslint --fix --ext .ts src",
@@ -23,20 +24,22 @@
   "homepage": "https://github.com/ataylorme/eslint-annotate-action#readme",
   "dependencies": {
     "@actions/core": "^1.7.0",
-    "@actions/github": "^5.0.1"
+    "actions-toolkit": "^6.0.1",
+    "dotenv": "^16.0.0"
   },
   "devDependencies": {
-    "@types/eslint": "^8.4.1",
+    "@octokit/webhooks-definitions": "^3.67.0",
     "@types/jest": "^27.4.1",
     "@types/node": "^17.0.31",
     "@typescript-eslint/eslint-plugin": "^5.21.0",
     "@typescript-eslint/parser": "^5.21.0",
-    "@zeit/ncc": "^0.20.5",
+    "@vercel/ncc": "^0.33.4",
     "eslint": "^8.14.0",
     "eslint-config-prettier": "^8.5.0",
     "eslint-plugin-import": "^2.26.0",
     "eslint-plugin-prettier": "^4.0.0",
     "jest": "^27",
+    "js-yaml": "^4.1.0",
     "prettier": "^2.6.2",
     "ts-jest": "^27.1.4",
     "typescript": "^4.6.4"

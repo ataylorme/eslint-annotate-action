@@ -8,9 +8,13 @@ inputs:
     description: "ESLint report file in JSON format."
     default: "eslint_report.json"
     required: false
+  only-pr-files:
+    description: "Only annotate files changed when run on pull requests"
+    default: 'true'
+    required: false
   fail-on-warning:
     description: "Fail the GitHub Action when ESLint warnings are detected. Set to 'true' to enable."
-    default: "false"
+    default: 'false'
     required: false
 runs:
   using: "node16"
