@@ -2,7 +2,7 @@
   "name": "eslint-annotate-action",
   "version": "2.0.0",
   "description": "A GitHub action that takes ESLint results from a JSON file and adds them as annotated pull request comments",
-  "main": "index.js",
+  "main": "dist/index.js",
   "scripts": {
     "build": "tsc",
     "postbuild": "ncc build lib/eslint-action.js",
