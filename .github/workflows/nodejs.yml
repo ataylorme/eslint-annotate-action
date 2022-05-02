@@ -14,19 +14,11 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Node.JS 14
-        uses: actions/setup-node@v2
+      - name: Setup NodeJS
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-${{ env.cache-name }}-
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
+          node-version: 16
+          cache: 'npm'
       - name: Install Node Dependencies
         run: npm ci
         env:

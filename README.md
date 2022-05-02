@@ -44,21 +44,13 @@ jobs:
 
     steps:
       - uses: actions/checkout@v2
-      - name: Node.JS 14
-        uses: actions/setup-node@v2
+      - name: Setup Node
+        uses: actions/setup-node@v3
         with:
-          node-version: 14
-      - name: Cache node modules
-        uses: actions/cache@v1
-        with:
-          path: ~/.npm
-          key: ${{ runner.OS }}-build-${{ hashFiles('**/package-lock.json') }}
-          restore-keys: |
-            ${{ runner.OS }}-build-${{ env.cache-name }}-
-            ${{ runner.OS }}-build-
-            ${{ runner.OS }}-
+          node-version: 16
+          cache: 'npm'
       - name: Install Node Dependencies
-        run: npm install
+        run: npm ci
         env:
           CI: TRUE
       - name: Test Code Linting
@@ -71,7 +63,7 @@ jobs:
         # Continue to the next step even if this fails
         continue-on-error: true
       - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@1.2.0
+        uses: ataylorme/eslint-annotate-action@v2
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
