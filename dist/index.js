@@ -19629,6 +19629,9 @@ function getAnalyzedReport(files) {
         for (const lintMessage of messages) {
             // Pull out information about the error/warning message
             const { line, column, severity, ruleId, message } = lintMessage;
+            // If there's no rule ID (e.g. an ignored file warning), skip
+            if (!ruleId)
+                continue;
             const endLine = lintMessage.endLine ? lintMessage.endLine : line;
             const endColumn = lintMessage.endColumn ? lintMessage.endColumn : column;
             // Check if it a warning or error
