@@ -4,9 +4,8 @@ on:
   push:
     branches:
       - master
+      - v2
   pull_request:
-    branches:
-      - "*"
 
 jobs:
   node_test:
@@ -41,3 +40,5 @@ jobs:
           path: eslint_report.json
       - name: Test That The Project Builds
         run: npm run build
+      - name: Run Unit Tests
+        run: npm run test
