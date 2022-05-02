@@ -3,6 +3,7 @@
   "version": "2.0.0",
   "description": "A GitHub action that takes ESLint results from a JSON file and adds them as annotated pull request comments",
   "main": "dist/index.js",
+  "license": "MIT",
   "scripts": {
     "build": "ncc build src/index.ts",
     "prestart": "npm run build",
