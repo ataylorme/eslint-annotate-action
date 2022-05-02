@@ -39,7 +39,8 @@ if (areTesting) {
 }
 
 const onlyChangedFiles = core.getInput('only-pr-files') || 'true'
-const failOnWarningInput = core.getInput('fail-on-warning') || ''
+const failOnWarningInput = core.getInput('fail-on-warning') || 'false'
+const checkName = core.getInput('check-name') || 'ESLint Report Analysis'
 const failOnWarning = failOnWarningInput === 'true'
 
 const reportFile = areTesting
@@ -61,7 +62,7 @@ export default {
   CONTEXT: tools.context,
   OWNER: areTesting ? 'ataylorme' : tools.context.repo.owner,
   REPO: areTesting ? 'eslint-annotate-github-action' : tools.context.repo.repo,
-  checkName: 'ESLint Report Analysis',
+  checkName,
   onlyChangedFiles: isPullRequest && onlyChangedFiles === 'true',
   reportFile,
   isPullRequest,

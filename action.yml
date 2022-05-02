@@ -16,6 +16,10 @@ inputs:
     description: "Fail the GitHub Action when ESLint warnings are detected. Set to 'true' to enable."
     default: 'false'
     required: false
+  check-name:
+    description: "The name of the GitHub status check created."
+    default: 'ESLint Report Analysis'
+    required: false
 runs:
   using: "node16"
   main: "dist/index.js"
