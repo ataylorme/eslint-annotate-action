@@ -4,9 +4,6 @@ inputs:
   repo-token:
     description: "Token used to interact with the Github API."
     required: true
-  run-id:
-    description: "The current run id"
-    required: true
   report-json:
     description: "ESLint report file in JSON format."
     default: "eslint_report.json"

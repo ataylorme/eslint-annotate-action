@@ -38,10 +38,11 @@ if (areTesting) {
   sha = '8e80ec28fec6ef9763aacbabb452bcb5d92315ca'
 }
 
+const runId = tools.context.runId;
+
 const onlyChangedFiles = core.getInput('only-pr-files') || 'true'
 const failOnWarningInput = core.getInput('fail-on-warning') || 'false'
 const checkName = core.getInput('check-name') || 'ESLint Report Analysis'
-const runId = core.getInput('run-id') 
 const failOnWarning = failOnWarningInput === 'true'
 
 const reportFile = areTesting
