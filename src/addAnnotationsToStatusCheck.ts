@@ -1,7 +1,7 @@
 import updateStatusCheck from './updateStatusCheck'
 import type {ChecksUpdateParamsOutputAnnotations, createCheckRunResponseDataType} from './types'
 import constants from './constants'
-const {OWNER, REPO, toolkit: tools, checkName} = constants
+const {OWNER, REPO, toolkit: tools, checkName, runId} = constants
 
 /**
  * Add annotations to an existing GitHub check run
@@ -35,6 +35,7 @@ export default async function addAnnotationsToStatusCheck(
         owner: OWNER,
         repo: REPO,
         check_run_id: checkId,
+        external_id: runId,
         status: 'in_progress',
         output: {
           title: checkName,

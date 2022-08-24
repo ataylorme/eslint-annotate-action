@@ -1,6 +1,6 @@
 import updateStatusCheck from './updateStatusCheck'
 import constants from './constants'
-const {OWNER, REPO, getTimestamp, checkName} = constants
+const {OWNER, REPO, getTimestamp, checkName, runId} = constants
 import type {checkUpdateParametersType} from './types'
 
 /**
@@ -21,6 +21,7 @@ export default async function closeStatusCheck(
     completed_at: getTimestamp(),
     status: 'completed',
     check_run_id: checkId,
+    external_id: runId,
     output: {
       title: checkName,
       summary: summary,
