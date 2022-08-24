@@ -1,6 +1,6 @@
 import createStatusCheck from './createStatusCheck'
 import constants from './constants'
-const {OWNER, REPO, SHA, getTimestamp, checkName} = constants
+const {OWNER, REPO, SHA, getTimestamp, checkName, runId} = constants
 
 /**
  * Open a new, in-progress GitHub check run
@@ -15,6 +15,7 @@ export default async function openStatusCheck(): Promise<number> {
     head_sha: SHA,
     status: 'in_progress',
     name: checkName,
+    external_id: runId,
     /**
      * The check run API is still in beta and the developer preview must be opted into
      * See https://developer.github.com/changes/2018-05-07-new-checks-api-public-beta/

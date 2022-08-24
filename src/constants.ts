@@ -41,6 +41,7 @@ if (areTesting) {
 const onlyChangedFiles = core.getInput('only-pr-files') || 'true'
 const failOnWarningInput = core.getInput('fail-on-warning') || 'false'
 const checkName = core.getInput('check-name') || 'ESLint Report Analysis'
+const runId = core.getInput('run-id') 
 const failOnWarning = failOnWarningInput === 'true'
 
 const reportFile = areTesting
@@ -69,4 +70,5 @@ export default {
   isGitHubActions,
   getTimestamp,
   failOnWarning,
+  runId
 }
