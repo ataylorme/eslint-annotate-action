@@ -14,5 +14,8 @@ export default function eslintJsonReportToJs(reportFile: string): ESLintReport {
   }
   const reportContents = fs.readFileSync(reportPath, 'utf-8')
   const reportParsed: ESLintReport = JSON.parse(reportContents)
+  if (!reportParsed) {
+    throw new Error(`The report-json file "${reportFile}" is empty.`)
+  }
   return reportParsed
 }
