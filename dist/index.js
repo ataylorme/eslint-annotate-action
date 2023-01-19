@@ -6945,9 +6945,6 @@ exports.Deprecation = Deprecation;
 const fs = __nccwpck_require__(7147)
 const path = __nccwpck_require__(1017)
 const os = __nccwpck_require__(2037)
-const packageJson = __nccwpck_require__(9968)
-
-const version = packageJson.version
 
 const LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg
 
@@ -6991,7 +6988,7 @@ function parse (src) {
 }
 
 function _log (message) {
-  console.log(`[dotenv@${version}][DEBUG] ${message}`)
+  console.log(`[dotenv][DEBUG] ${message}`)
 }
 
 function _resolveHome (envPath) {
@@ -20253,7 +20250,7 @@ const { OWNER, REPO, getTimestamp, checkName } = constants_1.default;
  * @param checkId the ID of the check run to close
  * @param summary a markdown summary of the check run results
  */
-async function closeStatusCheck(conclusion, checkId, summary) {
+async function closeStatusCheck(conclusion, checkId, summary, text) {
     await (0, updateStatusCheck_1.default)({
         conclusion,
         owner: OWNER,
@@ -20264,6 +20261,7 @@ async function closeStatusCheck(conclusion, checkId, summary) {
         output: {
             title: checkName,
             summary: summary,
+            text: text,
         },
         /**
          * The check run API is still in beta and the developer preview must be opted into
@@ -20339,9 +20337,11 @@ if (areTesting) {
 const onlyChangedFiles = core.getInput('only-pr-files') || 'true';
 const failOnWarningInput = core.getInput('fail-on-warning') || 'false';
 const failOnErrorInput = core.getInput('fail-on-error') || 'true';
+const markdownReportOnStepSummaryInput = core.getInput('markdown-report-on-step-summary') || 'false';
 const checkName = core.getInput('check-name') || 'ESLint Report Analysis';
 const failOnWarning = failOnWarningInput === 'true';
 const failOnError = failOnErrorInput === 'true';
+const markdownReportOnStepSummary = markdownReportOnStepSummaryInput === 'true';
 const reportFile = areTesting
     ? 'src/__tests__/eslintReport-3-errors.json'
     : core.getInput('report-json', { required: true });
@@ -20367,6 +20367,7 @@ exports["default"] = {
     getTimestamp,
     failOnWarning,
     failOnError,
+    markdownReportOnStepSummary,
 };
 
 
@@ -20698,7 +20699,7 @@ const closeStatusCheck_1 = __importDefault(__nccwpck_require__(7345));
 const addAnnotationsToStatusCheck_1 = __importDefault(__nccwpck_require__(822));
 const getPullRequestChangedAnalyzedReport_1 = __importDefault(__nccwpck_require__(6474));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { reportFile, onlyChangedFiles, failOnError, failOnWarning } = constants_1.default;
+const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary } = constants_1.default;
 actions_toolkit_1.Toolkit.run(async (tools) => {
     tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`);
     const reportJS = (0, eslintJsonReportToJs_1.default)(reportFile);
@@ -20717,7 +20718,7 @@ actions_toolkit_1.Toolkit.run(async (tools) => {
         // Add all the annotations to the status check
         await (0, addAnnotationsToStatusCheck_1.default)(annotations, checkId);
         // Finally, close the GitHub check as completed
-        await (0, closeStatusCheck_1.default)(conclusion, checkId, analyzedReport.summary);
+        await (0, closeStatusCheck_1.default)(conclusion, checkId, analyzedReport.summary, markdownReportOnStepSummary ? analyzedReport.markdown : '');
         // Fail the Action if the report analysis conclusions is failure
         if ((failOnWarning || failOnError) && conclusion === 'failure') {
             tools.exit.failure(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`);
@@ -20978,14 +20979,6 @@ module.exports = require("util");
 
 "use strict";
 module.exports = require("zlib");
-
-/***/ }),
-
-/***/ 9968:
-/***/ ((module) => {
-
-"use strict";
-module.exports = JSON.parse('{"name":"dotenv","version":"16.0.3","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"require":"./lib/main.js","types":"./lib/main.d.ts","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","lint-readme":"standard-markdown","pretest":"npm run lint && npm run dts-check","test":"tap tests/*.js --100 -Rspec","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@types/node":"^17.0.9","decache":"^4.6.1","dtslint":"^3.7.0","sinon":"^12.0.1","standard":"^16.0.4","standard-markdown":"^7.1.0","standard-version":"^9.3.2","tap":"^15.1.6","tar":"^6.1.11","typescript":"^4.5.4"},"engines":{"node":">=12"}}');
 
 /***/ }),
 
