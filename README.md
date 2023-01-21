@@ -30,6 +30,13 @@ This allows for more flexibility on how ESLint is run. This action is agnostic e
 | `fail-on-warning` | Fail the GitHub Action when ESLint warnings are detected. Set to `true` to enable. | No | `false` |
 | `check-name` | The name of the GitHub status check created. | No | `ESLint Report Analysis` |
 
+## Outputs
+
+| Name | Description |
+| `summary` | A short description of the error and warning count |
+| `errorCount` | The amount of errors ESLint reported on |
+| `warningCount` | The amount of warnings ESLint reported on |
+
 ## Usage Example
 
 In `.github/workflows/nodejs.yml`:

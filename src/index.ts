@@ -1,4 +1,5 @@
 import {Toolkit} from 'actions-toolkit'
+import * as core from '@actions/core'
 import eslintJsonReportToJs from './eslintJsonReportToJs'
 import getAnalyzedReport from './getAnalyzedReport'
 import openStatusCheck from './openStatusCheck'
@@ -18,6 +19,10 @@ Toolkit.run(async (tools) => {
   const conclusion = analyzedReport.success ? 'success' : 'failure'
 
   tools.log.info(analyzedReport.summary)
+
+  core.setOutput('summary', analyzedReport.summary)
+  core.setOutput('errorCount', analyzedReport.errorCount)
+  core.setOutput('warningCount', analyzedReport.warningCount)
 
   try {
     // Create a new, in-progress status check
