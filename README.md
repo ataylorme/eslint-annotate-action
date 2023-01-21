@@ -52,7 +52,7 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - uses: actions/checkout@v2
+      - uses: actions/checkout@v3
       - name: Setup Node
         uses: actions/setup-node@v3
         with:
@@ -76,8 +76,10 @@ jobs:
         with:
           repo-token: "${{ secrets.GITHUB_TOKEN }}"
           report-json: "eslint_report.json"
-      - name: Upload ESLint report
-        uses: actions/upload-artifact@v2
-        with:
-          name: eslint_report.json
-          path: eslint_report.json
+      # OPTIONAL: save a copy of the usage report for download or use in another job
+      # - name: Upload ESLint report
+      #   uses: actions/upload-artifact@v3
+      #   with:
+      #     name: eslint_report.json
+      #     path: eslint_report.json
+      #     retention-days: 5
