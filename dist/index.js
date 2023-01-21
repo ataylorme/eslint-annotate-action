@@ -20335,8 +20335,10 @@ if (areTesting) {
 }
 const onlyChangedFiles = core.getInput('only-pr-files') || 'true';
 const failOnWarningInput = core.getInput('fail-on-warning') || 'false';
+const failOnErrorInput = core.getInput('fail-on-error') || 'true';
 const checkName = core.getInput('check-name') || 'ESLint Report Analysis';
 const failOnWarning = failOnWarningInput === 'true';
+const failOnError = failOnErrorInput === 'true';
 const reportFile = areTesting
     ? 'src/__tests__/eslintReport-3-errors.json'
     : core.getInput('report-json', { required: true });
@@ -20361,6 +20363,7 @@ exports["default"] = {
     isGitHubActions,
     getTimestamp,
     failOnWarning,
+    failOnError,
 };
 
 
@@ -20686,7 +20689,7 @@ const closeStatusCheck_1 = __importDefault(__nccwpck_require__(7345));
 const addAnnotationsToStatusCheck_1 = __importDefault(__nccwpck_require__(822));
 const getPullRequestChangedAnalyzedReport_1 = __importDefault(__nccwpck_require__(6474));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { reportFile, onlyChangedFiles } = constants_1.default;
+const { reportFile, onlyChangedFiles, failOnError, failOnWarning } = constants_1.default;
 actions_toolkit_1.Toolkit.run(async (tools) => {
     tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`);
     const reportJS = (0, eslintJsonReportToJs_1.default)(reportFile);
@@ -20707,7 +20710,7 @@ actions_toolkit_1.Toolkit.run(async (tools) => {
         // Finally, close the GitHub check as completed
         await (0, closeStatusCheck_1.default)(conclusion, checkId, analyzedReport.summary);
         // Fail the Action if the report analysis conclusions is failure
-        if (conclusion === 'failure') {
+        if ((failOnWarning || failOnError) && conclusion === 'failure') {
             tools.exit.failure(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`);
             process.exit(1);
         }

@@ -7,7 +7,7 @@ import closeStatusCheck from './closeStatusCheck'
 import addAnnotationsToStatusCheck from './addAnnotationsToStatusCheck'
 import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzedReport'
 import constants from './constants'
-const {reportFile, onlyChangedFiles} = constants
+const {reportFile, onlyChangedFiles, failOnError, failOnWarning} = constants
 
 Toolkit.run(async (tools) => {
   tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`)
@@ -35,7 +35,7 @@ Toolkit.run(async (tools) => {
     await closeStatusCheck(conclusion, checkId, analyzedReport.summary)
 
     // Fail the Action if the report analysis conclusions is failure
-    if (conclusion === 'failure') {
+    if ((failOnWarning || failOnError) && conclusion === 'failure') {
       tools.exit.failure(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`)
       process.exit(1)
     }
