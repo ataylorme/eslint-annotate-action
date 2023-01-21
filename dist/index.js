@@ -20424,7 +20424,13 @@ function eslintJsonReportToJs(reportFile) {
         throw new Error(`The report-json file "${reportFile}" could not be resolved.`);
     }
     const reportContents = fs_1.default.readFileSync(reportPath, 'utf-8');
-    const reportParsed = JSON.parse(reportContents);
+    let reportParsed;
+    try {
+        reportParsed = JSON.parse(reportContents);
+    }
+    catch (error) {
+        throw new Error(`Error parsing the report-json file "${reportFile}".`);
+    }
     return reportParsed;
 }
 exports["default"] = eslintJsonReportToJs;
