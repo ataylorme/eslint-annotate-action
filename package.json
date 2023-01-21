@@ -1,6 +1,6 @@
 {
   "name": "eslint-annotate-action",
-  "version": "2.1.0",
+  "version": "2.1.1",
   "description": "A GitHub action that takes ESLint results from a JSON file and adds them as annotated pull request comments",
   "main": "dist/index.js",
   "license": "MIT",
