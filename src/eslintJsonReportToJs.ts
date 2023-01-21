@@ -13,6 +13,11 @@ export default function eslintJsonReportToJs(reportFile: string): ESLintReport {
     throw new Error(`The report-json file "${reportFile}" could not be resolved.`)
   }
   const reportContents = fs.readFileSync(reportPath, 'utf-8')
-  const reportParsed: ESLintReport = JSON.parse(reportContents)
+  let reportParsed: ESLintReport
+  try {
+    reportParsed = JSON.parse(reportContents)
+  } catch (error) {
+    throw new Error(`Error parsing the report-json file "${reportFile}".`)
+  }
   return reportParsed
 }

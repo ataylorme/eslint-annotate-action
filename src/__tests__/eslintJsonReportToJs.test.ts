@@ -4,15 +4,22 @@ import indentReportJSExpected from './eslintReport-1-error'
 const cwd = process.cwd()
 
 describe('ESLint report JSON to JS', () => {
-  it('Converts a standard ESLint JSON file to a JS object', async () => {
+  it('Converts a standard ESLint JSON file to a JS object', () => {
     const testReportPath = `${cwd}/src/__tests__/eslintReport-3-errors.json`
     const reportJS = eslintJsonReportToJs(testReportPath)
     expect(reportJS).toEqual(reportJSExpected)
   })
 
-  it('Converts an ESLint JSON file with indentation errors to a JS object', async () => {
+  it('Converts an ESLint JSON file with indentation errors to a JS object', () => {
     const testReportPath = `${cwd}/src/__tests__/eslintReport-1-error.json`
     const reportJS = eslintJsonReportToJs(testReportPath)
     expect(reportJS).toEqual(indentReportJSExpected)
+  })
+
+  it.only('Throws an error when the report is empty', () => {
+    const testReportPath = `${cwd}/src/__tests__/eslintReport-empty.json`
+    expect(() => {
+      eslintJsonReportToJs(testReportPath)
+    }).toThrowError()
   })
 })
