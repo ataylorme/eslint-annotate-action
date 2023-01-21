@@ -16,6 +16,10 @@ inputs:
     description: "Fail the GitHub Action when ESLint warnings are detected. Set to 'true' to enable."
     default: 'false'
     required: false
+  fail-on-error:
+    description: "Whether to fail the Github action when ESLint errors are detected. If set to false, the check that is created will still fail on ESLint errors."
+    default: 'true'
+    required: false
   check-name:
     description: "The name of the GitHub status check created."
     default: 'ESLint Report Analysis'
