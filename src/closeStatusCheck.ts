@@ -13,6 +13,7 @@ export default async function closeStatusCheck(
   conclusion: checkUpdateParametersType['conclusion'],
   checkId: checkUpdateParametersType['check_run_id'],
   summary: string,
+  text: string,
 ): Promise<void> {
   await updateStatusCheck({
     conclusion,
@@ -24,6 +25,7 @@ export default async function closeStatusCheck(
     output: {
       title: checkName,
       summary: summary,
+      text: text,
     },
     /**
      * The check run API is still in beta and the developer preview must be opted into

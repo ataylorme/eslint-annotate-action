@@ -30,6 +30,7 @@ This allows for more flexibility on how ESLint is run. This action is agnostic e
 | `fail-on-warning` | Fail the GitHub Action when ESLint warnings are detected. Set to `true` to enable. | No | `false` |
 | `fail-on-error` | Whether to fail the Github action when ESLint errors are detected. If set to false, the check that is created will still fail on ESLint errors. | No | `true` |
 | `check-name` | The name of the GitHub status check created. | No | `ESLint Report Analysis` |
+| `markdown-report-on-step-summary` | Whether to show a markdown report in the step summary. | No | `false` |
 
 ## Outputs
 
