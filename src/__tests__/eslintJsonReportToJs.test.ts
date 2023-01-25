@@ -16,7 +16,7 @@ describe('ESLint report JSON to JS', () => {
     expect(reportJS).toEqual(indentReportJSExpected)
   })
 
-  it.only('Throws an error when the report is empty', () => {
+  it('Throws an error when the report is empty', () => {
     const testReportPath = `${cwd}/src/__tests__/eslintReport-empty.json`
     expect(() => {
       eslintJsonReportToJs(testReportPath)
