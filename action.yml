@@ -26,7 +26,7 @@ inputs:
     required: false
   markdown-report-on-step-summary:
     description: "Whether to show a markdown report in the step summary."
-    default: false
+    default: 'false'
     required: false
 runs:
   using: "node16"
