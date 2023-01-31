@@ -35,6 +35,7 @@ This allows for more flexibility on how ESLint is run. This action is agnostic e
 ## Outputs
 
 | Name | Description |
+|---|---|
 | `summary` | A short description of the error and warning count |
 | `errorCount` | The amount of errors ESLint reported on |
 | `warningCount` | The amount of warnings ESLint reported on |
