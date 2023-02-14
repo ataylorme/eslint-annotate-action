@@ -47,6 +47,9 @@ const failOnWarning = failOnWarningInput === 'true'
 const failOnError = failOnErrorInput === 'true'
 const markdownReportOnStepSummary = markdownReportOnStepSummaryInput === 'true'
 
+// https://github.com/eslint/eslint/blob/a59a4e6e9217b3cc503c0a702b9e3b02b20b980d/lib/linter/apply-disable-directives.js#L253
+const UNUSED_DIRECTIVE_MESSAGE_PREFIX = 'Unused eslint-disable directive'
+
 const reportFile = areTesting
   ? 'src/__tests__/eslintReport-3-errors.json'
   : core.getInput('report-json', {required: true})
@@ -75,4 +78,5 @@ export default {
   failOnWarning,
   failOnError,
   markdownReportOnStepSummary,
+  UNUSED_DIRECTIVE_MESSAGE_PREFIX,
 }
