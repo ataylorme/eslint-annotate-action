@@ -20345,6 +20345,8 @@ const checkName = core.getInput('check-name') || 'ESLint Report Analysis';
 const failOnWarning = failOnWarningInput === 'true';
 const failOnError = failOnErrorInput === 'true';
 const markdownReportOnStepSummary = markdownReportOnStepSummaryInput === 'true';
+// https://github.com/eslint/eslint/blob/a59a4e6e9217b3cc503c0a702b9e3b02b20b980d/lib/linter/apply-disable-directives.js#L253
+const unusedDirectiveMessagePrefix = 'Unused eslint-disable directive';
 const reportFile = areTesting
     ? 'src/__tests__/eslintReport-3-errors.json'
     : core.getInput('report-json', { required: true });
@@ -20371,6 +20373,7 @@ exports["default"] = {
     failOnWarning,
     failOnError,
     markdownReportOnStepSummary,
+    unusedDirectiveMessagePrefix,
 };
 
 
@@ -20452,7 +20455,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { toolkit, GITHUB_WORKSPACE, OWNER, REPO, SHA, failOnWarning } = constants_1.default;
+const { toolkit, GITHUB_WORKSPACE, OWNER, REPO, SHA, failOnWarning, unusedDirectiveMessagePrefix } = constants_1.default;
 /**
  * Analyzes an ESLint report JS object and returns a report
  * @param files a JavaScript representation of an ESLint JSON report
@@ -20489,7 +20492,7 @@ function getAnalyzedReport(files) {
             // Pull out information about the error/warning message
             const { line, column, severity, ruleId, message } = lintMessage;
             // If there's no rule ID (e.g. an ignored file warning), skip
-            if (!ruleId)
+            if (!ruleId && !message.startsWith(unusedDirectiveMessagePrefix))
                 continue;
             const endLine = lintMessage.endLine ? lintMessage.endLine : line;
             const endColumn = lintMessage.endColumn ? lintMessage.endColumn : column;
