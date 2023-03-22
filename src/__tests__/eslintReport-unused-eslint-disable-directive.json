@@ -1,0 +1,30 @@
+[
+  {
+    "filePath": "src/index.ts",
+    "messages": [
+      {
+        "ruleId": null,
+        "message": "Unused eslint-disable directive (no problems were reported from '@typescript-eslint/no-unused-vars').",
+        "line": 10,
+        "column": 3,
+        "severity": 2,
+        "nodeType": null,
+        "fix": {
+          "range": [
+            319,
+            380
+          ],
+          "text": " "
+        }
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 0,
+    "warningCount": 0,
+    "fixableErrorCount": 1,
+    "fixableWarningCount": 0,
+    "source": "src/index.ts",
+    "usedDeprecatedRules": []
+  }
+]
