@@ -8,7 +8,7 @@ import addAnnotationsToStatusCheck from './addAnnotationsToStatusCheck'
 import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzedReport'
 import addSummary from './addSummary'
 import constants from './constants'
-const {reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary, outputToLocation} = constants
+const {reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary} = constants
 
 Toolkit.run(async (tools) => {
   tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`)
@@ -33,8 +33,8 @@ Toolkit.run(async (tools) => {
     await addAnnotationsToStatusCheck(annotations, checkId)
 
     // Add report to job summary
-    if (outputToLocation === 'step-summary') {
-      await addSummary(analyzedReport.markdown ?? analyzedReport.summary)
+    if (markdownReportOnStepSummary) {
+      await addSummary(analyzedReport.markdown)
     }
 
     // Finally, close the GitHub check as completed

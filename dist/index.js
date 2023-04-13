@@ -20288,7 +20288,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const updateStatusCheck_1 = __importDefault(__nccwpck_require__(4204));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { OWNER, REPO, getTimestamp, checkName, outputToLocation } = constants_1.default;
+const { OWNER, REPO, getTimestamp, checkName } = constants_1.default;
 /**
  *
  * @param conclusion whether or not the status check was successful. Must be one of: success, failure, neutral, cancelled, skipped, timed_out, or action_required.
@@ -20296,23 +20296,17 @@ const { OWNER, REPO, getTimestamp, checkName, outputToLocation } = constants_1.d
  * @param summary a markdown summary of the check run results
  */
 async function closeStatusCheck(conclusion, checkId, summary, text) {
-    const options = {
+    await (0, updateStatusCheck_1.default)({
         conclusion,
         owner: OWNER,
         repo: REPO,
         completed_at: getTimestamp(),
         status: 'completed',
         check_run_id: checkId,
-        ...{
-            ...(outputToLocation === 'checks'
-                ? {
-                    output: {
-                        title: checkName,
-                        summary: summary,
-                        text: text,
-                    },
-                }
-                : {}),
+        output: {
+            title: checkName,
+            summary: summary,
+            text: text,
         },
         /**
          * The check run API is still in beta and the developer preview must be opted into
@@ -20321,8 +20315,7 @@ async function closeStatusCheck(conclusion, checkId, summary, text) {
         mediaType: {
             previews: ['antiope'],
         },
-    };
-    await (0, updateStatusCheck_1.default)(options);
+    });
 }
 exports["default"] = closeStatusCheck;
 
@@ -20391,7 +20384,6 @@ const failOnWarningInput = core.getInput('fail-on-warning') || 'false';
 const failOnErrorInput = core.getInput('fail-on-error') || 'true';
 const markdownReportOnStepSummaryInput = core.getInput('markdown-report-on-step-summary') || 'false';
 const checkName = core.getInput('check-name') || 'ESLint Report Analysis';
-const outputToLocation = core.getInput('output-to') || 'checks';
 const failOnWarning = failOnWarningInput === 'true';
 const failOnError = failOnErrorInput === 'true';
 const markdownReportOnStepSummary = markdownReportOnStepSummaryInput === 'true';
@@ -20424,7 +20416,6 @@ exports["default"] = {
     failOnError,
     markdownReportOnStepSummary,
     unusedDirectiveMessagePrefix,
-    outputToLocation,
 };
 
 
@@ -20757,9 +20748,8 @@ const addAnnotationsToStatusCheck_1 = __importDefault(__nccwpck_require__(822));
 const getPullRequestChangedAnalyzedReport_1 = __importDefault(__nccwpck_require__(6474));
 const addSummary_1 = __importDefault(__nccwpck_require__(5577));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary, outputToLocation } = constants_1.default;
+const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary } = constants_1.default;
 actions_toolkit_1.Toolkit.run(async (tools) => {
-    var _a;
     tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`);
     const reportJS = (0, eslintJsonReportToJs_1.default)(reportFile);
     const analyzedReport = onlyChangedFiles
@@ -20777,8 +20767,8 @@ actions_toolkit_1.Toolkit.run(async (tools) => {
         // Add all the annotations to the status check
         await (0, addAnnotationsToStatusCheck_1.default)(annotations, checkId);
         // Add report to job summary
-        if (outputToLocation === 'step-summary') {
-            await (0, addSummary_1.default)((_a = analyzedReport.markdown) !== null && _a !== void 0 ? _a : analyzedReport.summary);
+        if (markdownReportOnStepSummary) {
+            await (0, addSummary_1.default)(analyzedReport.markdown);
         }
         // Finally, close the GitHub check as completed
         await (0, closeStatusCheck_1.default)(conclusion, checkId, analyzedReport.summary, markdownReportOnStepSummary ? analyzedReport.markdown : '');
