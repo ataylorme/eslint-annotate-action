@@ -32,7 +32,7 @@ Toolkit.run(async (tools) => {
     await addAnnotationsToStatusCheck(annotations, checkId)
 
     // Create step summary
-    await createStepSummary(analyzedReport.markdown)
+    await createStepSummary(analyzedReport.markdown, analyzedReport.summary)
 
     // Finally, close the GitHub check as completed
     // await closeStatusCheck(

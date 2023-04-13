@@ -15,7 +15,6 @@ const githubToken =
   isGitHubActions && !areTesting ? core.getInput('repo-token', {required: true}) : process.env.GITHUB_TOKEN
 
 const octokit = new Octokit({
-  previews: ['antiope'],
   auth: githubToken,
 })
 
