@@ -7,6 +7,6 @@ const {octokit} = constants
 export default async function createStepSummary(summary: string, text: string): Promise<void> {
   await octokit.core.summary
     .addRaw(summary)
-    .addRaw(summary)
+    .addRaw(text)
     .write()
 }
