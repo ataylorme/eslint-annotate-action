@@ -15,6 +15,7 @@ const githubToken =
   isGitHubActions && !areTesting ? core.getInput('repo-token', {required: true}) : process.env.GITHUB_TOKEN
 
 const octokit = new Octokit({
+  previews: ['antiope'],
   auth: githubToken,
 })
 
@@ -42,6 +43,7 @@ const failOnWarningInput = core.getInput('fail-on-warning') || 'false'
 const failOnErrorInput = core.getInput('fail-on-error') || 'true'
 const markdownReportOnStepSummaryInput = core.getInput('markdown-report-on-step-summary') || 'false'
 const checkName = core.getInput('check-name') || 'ESLint Report Analysis'
+const outputToLocation = core.getInput('output-to') || 'checks';
 const failOnWarning = failOnWarningInput === 'true'
 const failOnError = failOnErrorInput === 'true'
 const markdownReportOnStepSummary = markdownReportOnStepSummaryInput === 'true'
@@ -78,4 +80,5 @@ export default {
   failOnError,
   markdownReportOnStepSummary,
   unusedDirectiveMessagePrefix,
+  outputToLocation,
 }

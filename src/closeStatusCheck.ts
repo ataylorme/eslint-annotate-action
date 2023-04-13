@@ -1,6 +1,6 @@
 import updateStatusCheck from './updateStatusCheck'
 import constants from './constants'
-const {OWNER, REPO, getTimestamp, checkName} = constants
+const {OWNER, REPO, getTimestamp, checkName, outputToLocation} = constants
 import type {checkUpdateParametersType} from './types'
 
 /**
@@ -15,17 +15,23 @@ export default async function closeStatusCheck(
   summary: string,
   text: string,
 ): Promise<void> {
-  await updateStatusCheck({
+  const options = {
     conclusion,
     owner: OWNER,
     repo: REPO,
     completed_at: getTimestamp(),
     status: 'completed',
     check_run_id: checkId,
-    output: {
-      title: checkName,
-      summary: summary,
-      text: text,
+    ...{
+      ...(outputToLocation === 'checks'
+        ? {
+            output: {
+              title: checkName,
+              summary: summary,
+              text: text,
+            },
+          }
+        : {}),
     },
     /**
      * The check run API is still in beta and the developer preview must be opted into
@@ -34,5 +40,6 @@ export default async function closeStatusCheck(
     mediaType: {
       previews: ['antiope'],
     },
-  })
+  }
+  await updateStatusCheck(options)
 }

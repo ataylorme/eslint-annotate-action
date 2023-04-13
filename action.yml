@@ -28,6 +28,13 @@ inputs:
     description: "Whether to show a markdown report in the step summary."
     default: 'false'
     required: false
+  output-to:
+    description: |
+      The location to write the report to. Supported options:
+        - checks
+        - step-summary
+    default: 'checks'
+    required: false
 runs:
   using: "node16"
   main: "dist/index.js"
