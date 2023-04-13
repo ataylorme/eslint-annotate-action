@@ -20397,9 +20397,8 @@ const core = __importStar(__nccwpck_require__(2186));
 /**
  * Create step summary
  */
-async function createStepSummary(summary, text) {
+async function createStepSummary(summary) {
     core.summary.addRaw(summary);
-    core.summary.addRaw(text);
     await core.summary.write();
 }
 exports["default"] = createStepSummary;
@@ -20721,7 +20720,7 @@ actions_toolkit_1.Toolkit.run(async (tools) => {
         // Add all the annotations to the status check
         await (0, addAnnotationsToStatusCheck_1.default)(annotations, checkId);
         // Create step summary
-        await (0, createStepSummary_1.default)(analyzedReport.markdown, analyzedReport.summary);
+        await (0, createStepSummary_1.default)(analyzedReport.markdown);
         // Finally, close the GitHub check as completed
         // await closeStatusCheck(
         //   conclusion,
