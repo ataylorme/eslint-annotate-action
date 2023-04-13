@@ -20235,51 +20235,6 @@ exports["default"] = addAnnotationsToStatusCheck;
 
 /***/ }),
 
-/***/ 7345:
-/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
-
-"use strict";
-
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
-Object.defineProperty(exports, "__esModule", ({ value: true }));
-const updateStatusCheck_1 = __importDefault(__nccwpck_require__(4204));
-const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { OWNER, REPO, getTimestamp, checkName } = constants_1.default;
-/**
- *
- * @param conclusion whether or not the status check was successful. Must be one of: success, failure, neutral, cancelled, skipped, timed_out, or action_required.
- * @param checkId the ID of the check run to close
- * @param summary a markdown summary of the check run results
- */
-async function closeStatusCheck(conclusion, checkId, summary, text) {
-    await (0, updateStatusCheck_1.default)({
-        conclusion,
-        owner: OWNER,
-        repo: REPO,
-        completed_at: getTimestamp(),
-        status: 'completed',
-        check_run_id: checkId,
-        output: {
-            title: checkName,
-            summary: summary,
-            text: text,
-        },
-        /**
-         * The check run API is still in beta and the developer preview must be opted into
-         * See https://developer.github.com/changes/2018-05-07-new-checks-api-public-beta/
-         */
-        mediaType: {
-            previews: ['antiope'],
-        },
-    });
-}
-exports["default"] = closeStatusCheck;
-
-
-/***/ }),
-
 /***/ 9042:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -20320,7 +20275,6 @@ const areTesting = process.env.NODE_ENV === 'test';
 const isGitHubActions = process.env.GITHUB_ACTIONS;
 const githubToken = isGitHubActions && !areTesting ? core.getInput('repo-token', { required: true }) : process.env.GITHUB_TOKEN;
 const octokit = new rest_1.Octokit({
-    previews: ['antiope'],
     auth: githubToken,
 });
 const tools = new actions_toolkit_1.Toolkit({
@@ -20406,6 +20360,31 @@ async function createStatusCheck(options) {
     }
 }
 exports["default"] = createStatusCheck;
+
+
+/***/ }),
+
+/***/ 2275:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const constants_1 = __importDefault(__nccwpck_require__(9042));
+const { octokit } = constants_1.default;
+/**
+ * Create step summary
+ */
+async function createStepSummary(summary, text) {
+    const coreSummary = octokit.core.summary;
+    coreSummary.addRaw(summary);
+    coreSummary.addRaw(text);
+    await coreSummary.write();
+}
+exports["default"] = createStepSummary;
 
 
 /***/ }),
@@ -20701,11 +20680,11 @@ const core = __importStar(__nccwpck_require__(2186));
 const eslintJsonReportToJs_1 = __importDefault(__nccwpck_require__(1036));
 const getAnalyzedReport_1 = __importDefault(__nccwpck_require__(8481));
 const openStatusCheck_1 = __importDefault(__nccwpck_require__(7829));
-const closeStatusCheck_1 = __importDefault(__nccwpck_require__(7345));
+const createStepSummary_1 = __importDefault(__nccwpck_require__(2275));
 const addAnnotationsToStatusCheck_1 = __importDefault(__nccwpck_require__(822));
 const getPullRequestChangedAnalyzedReport_1 = __importDefault(__nccwpck_require__(6474));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary } = constants_1.default;
+const { reportFile, onlyChangedFiles, failOnError, failOnWarning } = constants_1.default;
 actions_toolkit_1.Toolkit.run(async (tools) => {
     tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`);
     const reportJS = (0, eslintJsonReportToJs_1.default)(reportFile);
@@ -20723,8 +20702,15 @@ actions_toolkit_1.Toolkit.run(async (tools) => {
         const checkId = await (0, openStatusCheck_1.default)();
         // Add all the annotations to the status check
         await (0, addAnnotationsToStatusCheck_1.default)(annotations, checkId);
+        // Create step summary
+        await (0, createStepSummary_1.default)(analyzedReport.markdown, analyzedReport.summary);
         // Finally, close the GitHub check as completed
-        await (0, closeStatusCheck_1.default)(conclusion, checkId, analyzedReport.summary, markdownReportOnStepSummary ? analyzedReport.markdown : '');
+        // await closeStatusCheck(
+        //   conclusion,
+        //   checkId,
+        //   analyzedReport.summary,
+        //   markdownReportOnStepSummary ? analyzedReport.markdown : '',
+        // )
         // Fail the Action if the report analysis conclusions is failure
         if ((failOnWarning || failOnError) && conclusion === 'failure') {
             tools.exit.failure(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`);
