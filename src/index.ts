@@ -3,11 +3,11 @@ import * as core from '@actions/core'
 import eslintJsonReportToJs from './eslintJsonReportToJs'
 import getAnalyzedReport from './getAnalyzedReport'
 import openStatusCheck from './openStatusCheck'
-import closeStatusCheck from './closeStatusCheck'
+import createStepSummary from './createStepSummary'
 import addAnnotationsToStatusCheck from './addAnnotationsToStatusCheck'
 import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzedReport'
 import constants from './constants'
-const {reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary} = constants
+const {reportFile, onlyChangedFiles, failOnError, failOnWarning} = constants
 
 Toolkit.run(async (tools) => {
   tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`)
@@ -31,13 +31,16 @@ Toolkit.run(async (tools) => {
     // Add all the annotations to the status check
     await addAnnotationsToStatusCheck(annotations, checkId)
 
+    // Create step summary
+    await createStepSummary(analyzedReport.markdown)
+
     // Finally, close the GitHub check as completed
-    await closeStatusCheck(
-      conclusion,
-      checkId,
-      analyzedReport.summary,
-      markdownReportOnStepSummary ? analyzedReport.markdown : '',
-    )
+    // await closeStatusCheck(
+    //   conclusion,
+    //   checkId,
+    //   analyzedReport.summary,
+    //   markdownReportOnStepSummary ? analyzedReport.markdown : '',
+    // )
 
     // Fail the Action if the report analysis conclusions is failure
     if ((failOnWarning || failOnError) && conclusion === 'failure') {
