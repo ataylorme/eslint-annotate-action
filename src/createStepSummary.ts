@@ -1,12 +1,10 @@
-import constants from './constants'
-const {octokit} = constants
+import * as core from '@actions/core';
 
 /**
  * Create step summary
  */
 export default async function createStepSummary(summary: string, text: string): Promise<void> {
-  const coreSummary = octokit.core.summary
-  coreSummary.addRaw(summary)
-  coreSummary.addRaw(text)
-  await coreSummary.write()
+  core.summary.addRaw(summary);
+  core.summary.addRaw(text);
+  await core.summary.write();
 }
