@@ -22911,7 +22911,6 @@ function parseReportFile(reportFile) {
 async function eslintJsonReportToJs(reportFile) {
     const globber = await glob.create(reportFile);
     const files = await globber.glob();
-    console.log('files', files);
     return files.map(parseReportFile).flat();
 }
 exports["default"] = eslintJsonReportToJs;
@@ -23181,7 +23180,7 @@ const getPullRequestChangedAnalyzedReport_1 = __importDefault(__nccwpck_require_
 const constants_1 = __importDefault(__nccwpck_require__(9042));
 const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary } = constants_1.default;
 actions_toolkit_1.Toolkit.run(async (tools) => {
-    tools.log.info(`Starting analysis of the ESLint report ${reportFile}. Standby...`);
+    tools.log.info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`);
     const reportJS = await (0, eslintJsonReportToJs_1.default)(reportFile);
     const analyzedReport = onlyChangedFiles
         ? await (0, getPullRequestChangedAnalyzedReport_1.default)(reportJS)
