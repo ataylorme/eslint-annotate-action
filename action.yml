@@ -2,14 +2,15 @@ name: "ESLint Annotate from Report JSON"
 description: "Annotates pull request diffs with warnings and errors from an ESLint report JSON file."
 inputs:
   repo-token:
-    description: "Token used to interact with the Github API."
+    description: "The 'GITHUB_TOKEN' secret"
+    default: ${{ github.token }}
     required: true
   report-json:
-    description: "ESLint report file in JSON format."
+    description: "Path or glob pattern to locate the ESLint report JSON file"
     default: "eslint_report.json"
     required: false
   only-pr-files:
-    description: "Only annotate files changed when run on pull requests"
+    description: "Only annotate files changed when run on the 'pull_request' event"
     default: 'true'
     required: false
   fail-on-warning:
