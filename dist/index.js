@@ -20235,6 +20235,48 @@ exports["default"] = addAnnotationsToStatusCheck;
 
 /***/ }),
 
+/***/ 5577:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __createBinding = (this && this.__createBinding) || (Object.create ? (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    var desc = Object.getOwnPropertyDescriptor(m, k);
+    if (!desc || ("get" in desc ? !m.__esModule : desc.writable || desc.configurable)) {
+      desc = { enumerable: true, get: function() { return m[k]; } };
+    }
+    Object.defineProperty(o, k2, desc);
+}) : (function(o, m, k, k2) {
+    if (k2 === undefined) k2 = k;
+    o[k2] = m[k];
+}));
+var __setModuleDefault = (this && this.__setModuleDefault) || (Object.create ? (function(o, v) {
+    Object.defineProperty(o, "default", { enumerable: true, value: v });
+}) : function(o, v) {
+    o["default"] = v;
+});
+var __importStar = (this && this.__importStar) || function (mod) {
+    if (mod && mod.__esModule) return mod;
+    var result = {};
+    if (mod != null) for (var k in mod) if (k !== "default" && Object.prototype.hasOwnProperty.call(mod, k)) __createBinding(result, mod, k);
+    __setModuleDefault(result, mod);
+    return result;
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const core = __importStar(__nccwpck_require__(2186));
+/**
+ * Add to job summary
+ */
+async function addSummary(summary) {
+    core.summary.addRaw(summary);
+    await core.summary.write();
+}
+exports["default"] = addSummary;
+
+
+/***/ }),
+
 /***/ 7345:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -20704,6 +20746,7 @@ const openStatusCheck_1 = __importDefault(__nccwpck_require__(7829));
 const closeStatusCheck_1 = __importDefault(__nccwpck_require__(7345));
 const addAnnotationsToStatusCheck_1 = __importDefault(__nccwpck_require__(822));
 const getPullRequestChangedAnalyzedReport_1 = __importDefault(__nccwpck_require__(6474));
+const addSummary_1 = __importDefault(__nccwpck_require__(5577));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
 const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary } = constants_1.default;
 actions_toolkit_1.Toolkit.run(async (tools) => {
@@ -20723,6 +20766,10 @@ actions_toolkit_1.Toolkit.run(async (tools) => {
         const checkId = await (0, openStatusCheck_1.default)();
         // Add all the annotations to the status check
         await (0, addAnnotationsToStatusCheck_1.default)(annotations, checkId);
+        // Add report to job summary
+        if (markdownReportOnStepSummary) {
+            await (0, addSummary_1.default)(analyzedReport.markdown);
+        }
         // Finally, close the GitHub check as completed
         await (0, closeStatusCheck_1.default)(conclusion, checkId, analyzedReport.summary, markdownReportOnStepSummary ? analyzedReport.markdown : '');
         // Fail the Action if the report analysis conclusions is failure

@@ -6,6 +6,7 @@ import openStatusCheck from './openStatusCheck'
 import closeStatusCheck from './closeStatusCheck'
 import addAnnotationsToStatusCheck from './addAnnotationsToStatusCheck'
 import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzedReport'
+import addSummary from './addSummary'
 import constants from './constants'
 const {reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary} = constants
 
@@ -30,6 +31,11 @@ Toolkit.run(async (tools) => {
 
     // Add all the annotations to the status check
     await addAnnotationsToStatusCheck(annotations, checkId)
+
+    // Add report to job summary
+    if (markdownReportOnStepSummary) {
+      await addSummary(analyzedReport.markdown)
+    }
 
     // Finally, close the GitHub check as completed
     await closeStatusCheck(
