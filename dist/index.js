@@ -558,7 +558,7 @@ class OidcClient {
                 .catch(error => {
                 throw new Error(`Failed to get ID Token. \n 
         Error Code : ${error.statusCode}\n 
-        Error Message: ${error.result.message}`);
+        Error Message: ${error.message}`);
             });
             const id_token = (_a = res.result) === null || _a === void 0 ? void 0 : _a.value;
             if (!id_token) {
@@ -8435,13 +8435,14 @@ exports.Deprecation = Deprecation;
 const fs = __nccwpck_require__(7147)
 const path = __nccwpck_require__(1017)
 const os = __nccwpck_require__(2037)
+const crypto = __nccwpck_require__(6113)
 const packageJson = __nccwpck_require__(9968)
 
 const version = packageJson.version
 
 const LINE = /(?:^|^)\s*(?:export\s+)?([\w.-]+)(?:\s*=\s*?|:\s+?)(\s*'(?:\\'|[^'])*'|\s*"(?:\\"|[^"])*"|\s*`(?:\\`|[^`])*`|[^#\r\n]+)?\s*(?:#.*)?(?:$|$)/mg
 
-// Parser src into an Object
+// Parse src into an Object
 function parse (src) {
   const obj = {}
 
@@ -8480,27 +8481,187 @@ function parse (src) {
   return obj
 }
 
+function _parseVault (options) {
+  const vaultPath = _vaultPath(options)
+
+  // Parse .env.vault
+  const result = DotenvModule.configDotenv({ path: vaultPath })
+  if (!result.parsed) {
+    const err = new Error(`MISSING_DATA: Cannot parse ${vaultPath} for an unknown reason`)
+    err.code = 'MISSING_DATA'
+    throw err
+  }
+
+  // handle scenario for comma separated keys - for use with key rotation
+  // example: DOTENV_KEY="dotenv://:key_1234@dotenv.org/vault/.env.vault?environment=prod,dotenv://:key_7890@dotenv.org/vault/.env.vault?environment=prod"
+  const keys = _dotenvKey(options).split(',')
+  const length = keys.length
+
+  let decrypted
+  for (let i = 0; i < length; i++) {
+    try {
+      // Get full key
+      const key = keys[i].trim()
+
+      // Get instructions for decrypt
+      const attrs = _instructions(result, key)
+
+      // Decrypt
+      decrypted = DotenvModule.decrypt(attrs.ciphertext, attrs.key)
+
+      break
+    } catch (error) {
+      // last key
+      if (i + 1 >= length) {
+        throw error
+      }
+      // try next key
+    }
+  }
+
+  // Parse decrypted .env string
+  return DotenvModule.parse(decrypted)
+}
+
 function _log (message) {
+  console.log(`[dotenv@${version}][INFO] ${message}`)
+}
+
+function _warn (message) {
+  console.log(`[dotenv@${version}][WARN] ${message}`)
+}
+
+function _debug (message) {
   console.log(`[dotenv@${version}][DEBUG] ${message}`)
+}
+
+function _dotenvKey (options) {
+  // prioritize developer directly setting options.DOTENV_KEY
+  if (options && options.DOTENV_KEY && options.DOTENV_KEY.length > 0) {
+    return options.DOTENV_KEY
+  }
+
+  // secondary infra already contains a DOTENV_KEY environment variable
+  if (process.env.DOTENV_KEY && process.env.DOTENV_KEY.length > 0) {
+    return process.env.DOTENV_KEY
+  }
+
+  // fallback to empty string
+  return ''
+}
+
+function _instructions (result, dotenvKey) {
+  // Parse DOTENV_KEY. Format is a URI
+  let uri
+  try {
+    uri = new URL(dotenvKey)
+  } catch (error) {
+    if (error.code === 'ERR_INVALID_URL') {
+      const err = new Error('INVALID_DOTENV_KEY: Wrong format. Must be in valid uri format like dotenv://:key_1234@dotenv.org/vault/.env.vault?environment=development')
+      err.code = 'INVALID_DOTENV_KEY'
+      throw err
+    }
+
+    throw error
+  }
+
+  // Get decrypt key
+  const key = uri.password
+  if (!key) {
+    const err = new Error('INVALID_DOTENV_KEY: Missing key part')
+    err.code = 'INVALID_DOTENV_KEY'
+    throw err
+  }
+
+  // Get environment
+  const environment = uri.searchParams.get('environment')
+  if (!environment) {
+    const err = new Error('INVALID_DOTENV_KEY: Missing environment part')
+    err.code = 'INVALID_DOTENV_KEY'
+    throw err
+  }
+
+  // Get ciphertext payload
+  const environmentKey = `DOTENV_VAULT_${environment.toUpperCase()}`
+  const ciphertext = result.parsed[environmentKey] // DOTENV_VAULT_PRODUCTION
+  if (!ciphertext) {
+    const err = new Error(`NOT_FOUND_DOTENV_ENVIRONMENT: Cannot locate environment ${environmentKey} in your .env.vault file.`)
+    err.code = 'NOT_FOUND_DOTENV_ENVIRONMENT'
+    throw err
+  }
+
+  return { ciphertext, key }
+}
+
+function _vaultPath (options) {
+  let possibleVaultPath = null
+
+  if (options && options.path && options.path.length > 0) {
+    if (Array.isArray(options.path)) {
+      for (const filepath of options.path) {
+        if (fs.existsSync(filepath)) {
+          possibleVaultPath = filepath.endsWith('.vault') ? filepath : `${filepath}.vault`
+        }
+      }
+    } else {
+      possibleVaultPath = options.path.endsWith('.vault') ? options.path : `${options.path}.vault`
+    }
+  } else {
+    possibleVaultPath = path.resolve(process.cwd(), '.env.vault')
+  }
+
+  if (fs.existsSync(possibleVaultPath)) {
+    return possibleVaultPath
+  }
+
+  return null
 }
 
 function _resolveHome (envPath) {
   return envPath[0] === '~' ? path.join(os.homedir(), envPath.slice(1)) : envPath
 }
 
-// Populates process.env from .env file
-function config (options) {
+function _configVault (options) {
+  _log('Loading env from encrypted .env.vault')
+
+  const parsed = DotenvModule._parseVault(options)
+
+  let processEnv = process.env
+  if (options && options.processEnv != null) {
+    processEnv = options.processEnv
+  }
+
+  DotenvModule.populate(processEnv, parsed, options)
+
+  return { parsed }
+}
+
+function configDotenv (options) {
   let dotenvPath = path.resolve(process.cwd(), '.env')
   let encoding = 'utf8'
   const debug = Boolean(options && options.debug)
-  const override = Boolean(options && options.override)
 
   if (options) {
     if (options.path != null) {
-      dotenvPath = _resolveHome(options.path)
+      let envPath = options.path
+
+      if (Array.isArray(envPath)) {
+        for (const filepath of options.path) {
+          if (fs.existsSync(filepath)) {
+            envPath = filepath
+            break
+          }
+        }
+      }
+
+      dotenvPath = _resolveHome(envPath)
     }
     if (options.encoding != null) {
       encoding = options.encoding
+    } else {
+      if (debug) {
+        _debug('No encoding is specified. UTF-8 is used by default')
+      }
     }
   }
 
@@ -8508,41 +8669,122 @@ function config (options) {
     // Specifying an encoding returns a string instead of a buffer
     const parsed = DotenvModule.parse(fs.readFileSync(dotenvPath, { encoding }))
 
-    Object.keys(parsed).forEach(function (key) {
-      if (!Object.prototype.hasOwnProperty.call(process.env, key)) {
-        process.env[key] = parsed[key]
-      } else {
-        if (override === true) {
-          process.env[key] = parsed[key]
-        }
+    let processEnv = process.env
+    if (options && options.processEnv != null) {
+      processEnv = options.processEnv
+    }
 
-        if (debug) {
-          if (override === true) {
-            _log(`"${key}" is already defined in \`process.env\` and WAS overwritten`)
-          } else {
-            _log(`"${key}" is already defined in \`process.env\` and was NOT overwritten`)
-          }
-        }
-      }
-    })
+    DotenvModule.populate(processEnv, parsed, options)
 
     return { parsed }
   } catch (e) {
     if (debug) {
-      _log(`Failed to load ${dotenvPath} ${e.message}`)
+      _debug(`Failed to load ${dotenvPath} ${e.message}`)
     }
 
     return { error: e }
   }
 }
 
-const DotenvModule = {
-  config,
-  parse
+// Populates process.env from .env file
+function config (options) {
+  // fallback to original dotenv if DOTENV_KEY is not set
+  if (_dotenvKey(options).length === 0) {
+    return DotenvModule.configDotenv(options)
+  }
+
+  const vaultPath = _vaultPath(options)
+
+  // dotenvKey exists but .env.vault file does not exist
+  if (!vaultPath) {
+    _warn(`You set DOTENV_KEY but you are missing a .env.vault file at ${vaultPath}. Did you forget to build it?`)
+
+    return DotenvModule.configDotenv(options)
+  }
+
+  return DotenvModule._configVault(options)
 }
 
+function decrypt (encrypted, keyStr) {
+  const key = Buffer.from(keyStr.slice(-64), 'hex')
+  let ciphertext = Buffer.from(encrypted, 'base64')
+
+  const nonce = ciphertext.subarray(0, 12)
+  const authTag = ciphertext.subarray(-16)
+  ciphertext = ciphertext.subarray(12, -16)
+
+  try {
+    const aesgcm = crypto.createDecipheriv('aes-256-gcm', key, nonce)
+    aesgcm.setAuthTag(authTag)
+    return `${aesgcm.update(ciphertext)}${aesgcm.final()}`
+  } catch (error) {
+    const isRange = error instanceof RangeError
+    const invalidKeyLength = error.message === 'Invalid key length'
+    const decryptionFailed = error.message === 'Unsupported state or unable to authenticate data'
+
+    if (isRange || invalidKeyLength) {
+      const err = new Error('INVALID_DOTENV_KEY: It must be 64 characters long (or more)')
+      err.code = 'INVALID_DOTENV_KEY'
+      throw err
+    } else if (decryptionFailed) {
+      const err = new Error('DECRYPTION_FAILED: Please check your DOTENV_KEY')
+      err.code = 'DECRYPTION_FAILED'
+      throw err
+    } else {
+      throw error
+    }
+  }
+}
+
+// Populate process.env with parsed values
+function populate (processEnv, parsed, options = {}) {
+  const debug = Boolean(options && options.debug)
+  const override = Boolean(options && options.override)
+
+  if (typeof parsed !== 'object') {
+    const err = new Error('OBJECT_REQUIRED: Please check the processEnv argument being passed to populate')
+    err.code = 'OBJECT_REQUIRED'
+    throw err
+  }
+
+  // Set process.env
+  for (const key of Object.keys(parsed)) {
+    if (Object.prototype.hasOwnProperty.call(processEnv, key)) {
+      if (override === true) {
+        processEnv[key] = parsed[key]
+      }
+
+      if (debug) {
+        if (override === true) {
+          _debug(`"${key}" is already defined and WAS overwritten`)
+        } else {
+          _debug(`"${key}" is already defined and was NOT overwritten`)
+        }
+      }
+    } else {
+      processEnv[key] = parsed[key]
+    }
+  }
+}
+
+const DotenvModule = {
+  configDotenv,
+  _configVault,
+  _parseVault,
+  config,
+  decrypt,
+  parse,
+  populate
+}
+
+module.exports.configDotenv = DotenvModule.configDotenv
+module.exports._configVault = DotenvModule._configVault
+module.exports._parseVault = DotenvModule._parseVault
 module.exports.config = DotenvModule.config
+module.exports.decrypt = DotenvModule.decrypt
 module.exports.parse = DotenvModule.parse
+module.exports.populate = DotenvModule.populate
+
 module.exports = DotenvModule
 
 
@@ -23554,7 +23796,7 @@ module.exports = require("zlib");
 /***/ ((module) => {
 
 "use strict";
-module.exports = JSON.parse('{"name":"dotenv","version":"16.0.3","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"require":"./lib/main.js","types":"./lib/main.d.ts","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","lint-readme":"standard-markdown","pretest":"npm run lint && npm run dts-check","test":"tap tests/*.js --100 -Rspec","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@types/node":"^17.0.9","decache":"^4.6.1","dtslint":"^3.7.0","sinon":"^12.0.1","standard":"^16.0.4","standard-markdown":"^7.1.0","standard-version":"^9.3.2","tap":"^15.1.6","tar":"^6.1.11","typescript":"^4.5.4"},"engines":{"node":">=12"}}');
+module.exports = JSON.parse('{"name":"dotenv","version":"16.4.1","description":"Loads environment variables from .env file","main":"lib/main.js","types":"lib/main.d.ts","exports":{".":{"types":"./lib/main.d.ts","require":"./lib/main.js","default":"./lib/main.js"},"./config":"./config.js","./config.js":"./config.js","./lib/env-options":"./lib/env-options.js","./lib/env-options.js":"./lib/env-options.js","./lib/cli-options":"./lib/cli-options.js","./lib/cli-options.js":"./lib/cli-options.js","./package.json":"./package.json"},"scripts":{"dts-check":"tsc --project tests/types/tsconfig.json","lint":"standard","lint-readme":"standard-markdown","pretest":"npm run lint && npm run dts-check","test":"tap tests/*.js --100 -Rspec","prerelease":"npm test","release":"standard-version"},"repository":{"type":"git","url":"git://github.com/motdotla/dotenv.git"},"funding":"https://github.com/motdotla/dotenv?sponsor=1","keywords":["dotenv","env",".env","environment","variables","config","settings"],"readmeFilename":"README.md","license":"BSD-2-Clause","devDependencies":{"@definitelytyped/dtslint":"^0.0.133","@types/node":"^18.11.3","decache":"^4.6.1","sinon":"^14.0.1","standard":"^17.0.0","standard-markdown":"^7.1.0","standard-version":"^9.5.0","tap":"^16.3.0","tar":"^6.1.11","typescript":"^4.8.4"},"engines":{"node":">=12"},"browser":{"fs":false}}');
 
 /***/ }),
 
