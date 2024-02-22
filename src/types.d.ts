@@ -1,3 +1,6 @@
+import {ESLint as ESLintType} from '@types/eslint'
+export type eslintResultType = ESLintType.LintResult
+
 // https://www.npmjs.com/package/@octokit/types
 import {Endpoints, GetResponseDataTypeFromEndpointMethod} from '@octokit/types'
 import {Webhooks} from '@octokit/webhooks-definitions'

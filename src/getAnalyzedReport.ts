@@ -1,6 +1,6 @@
 import type {ESLintReport, ChecksUpdateParamsOutputAnnotations, AnalyzedESLintReport} from './types'
 import constants from './constants'
-const {toolkit, GITHUB_WORKSPACE, OWNER, REPO, SHA, failOnWarning, unusedDirectiveMessagePrefix} = constants
+const {core, GITHUB_WORKSPACE, OWNER, REPO, SHA, failOnWarning, unusedDirectiveMessagePrefix} = constants
 
 /**
  * Analyzes an ESLint report JS object and returns a report
@@ -26,7 +26,7 @@ export default function getAnalyzedReport(files: ESLintReport): AnalyzedESLintRe
     // Get the file path and any warning/error messages
     const {filePath, messages} = file
 
-    toolkit.log.info(`Analyzing ${filePath}`)
+    core.info(`Analyzing ${filePath}`)
 
     // Skip files with no error or warning messages
     if (!messages.length) {

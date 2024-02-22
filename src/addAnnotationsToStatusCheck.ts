@@ -1,7 +1,7 @@
 import updateStatusCheck from './updateStatusCheck'
 import type {ChecksUpdateParamsOutputAnnotations, createCheckRunResponseDataType} from './types'
 import constants from './constants'
-const {OWNER, REPO, toolkit: tools, checkName} = constants
+const {OWNER, REPO, core, checkName} = constants
 
 /**
  * Add annotations to an existing GitHub check run
@@ -28,7 +28,7 @@ export default async function addAnnotationsToStatusCheck(
   const checkUpdatePromises = []
   for (let batch = 1; batch <= numBatches; batch++) {
     const batchMessage = `Found ${numberOfAnnotations} ESLint errors and warnings, processing batch ${batch} of ${numBatches}...`
-    tools.log.info(batchMessage)
+    core.info(batchMessage)
     const annotationBatch = annotations.splice(0, batchSize)
     try {
       const currentCheckPromise = updateStatusCheck({
@@ -54,9 +54,9 @@ export default async function addAnnotationsToStatusCheck(
       const errorMessage = `Error adding anotations to the GitHub status check with ID: ${checkId}`
       // err only has an error message if it is an instance of Error
       if (err instanceof Error) {
-        tools.exit.failure(err.message ? err.message : errorMessage)
+        core.setFailed(err.message ? err.message : errorMessage)
       } else {
-        tools.exit.failure(errorMessage)
+        core.setFailed(errorMessage)
       }
     }
   }

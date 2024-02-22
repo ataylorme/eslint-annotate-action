@@ -15,8 +15,7 @@ export default async function getPullRequestFiles(options: prFilesParametersType
       'GET /repos/:owner/:repo/pulls/:pull_number/files',
       options,
     )
-    const prFilesNames = prFiles.map((prFiles: prFilesResponseType['data']) => prFiles.filename)
-    return Promise.resolve(prFilesNames)
+    return prFiles.map((prFiles: prFilesResponseType['data']) => prFiles.filename)
   } catch (error) {
     return Promise.reject(error)
   }

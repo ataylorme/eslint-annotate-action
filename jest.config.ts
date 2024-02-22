@@ -10,6 +10,7 @@ const config: Config = {
   },
   transformIgnorePatterns: ['^.+\\.js$'],
   verbose: true,
+  setupFilesAfterEnv: ['./jest.setup.ts'],
 }
 
 export default config

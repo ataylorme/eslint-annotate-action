@@ -1,4 +1,3 @@
-import {Toolkit} from 'actions-toolkit'
 import * as core from '@actions/core'
 import eslintJsonReportToJs from './eslintJsonReportToJs'
 import getAnalyzedReport from './getAnalyzedReport'
@@ -10,8 +9,8 @@ import addSummary from './addSummary'
 import constants from './constants'
 const {reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary} = constants
 
-Toolkit.run(async (tools) => {
-  tools.log.info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`)
+async function run(): Promise<void> {
+  core.info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`)
   const reportJS = await eslintJsonReportToJs(reportFile)
   const analyzedReport = onlyChangedFiles
     ? await getPullRequestChangedAnalyzedReport(reportJS)
@@ -19,7 +18,7 @@ Toolkit.run(async (tools) => {
   const annotations = analyzedReport.annotations
   const conclusion = analyzedReport.success ? 'success' : 'failure'
 
-  tools.log.info(analyzedReport.summary)
+  core.info(analyzedReport.summary)
 
   core.setOutput('summary', analyzedReport.summary)
   core.setOutput('errorCount', analyzedReport.errorCount)
@@ -47,18 +46,21 @@ Toolkit.run(async (tools) => {
 
     // Fail the Action if the report analysis conclusions is failure
     if ((failOnWarning || failOnError) && conclusion === 'failure') {
-      tools.exit.failure(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`)
+      core.setFailed(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`)
       process.exit(1)
     }
   } catch (err) {
     const errorMessage = 'Error creating a status check for the ESLint analysis.'
     // err only has an error message if it is an instance of Error
     if (err instanceof Error) {
-      tools.exit.failure(err.message ? err.message : errorMessage)
+      core.setFailed(err.message ? err.message : errorMessage)
     } else {
-      tools.exit.failure(errorMessage)
+      core.setFailed(errorMessage)
     }
   }
   // If we got this far things were a success
-  tools.exit.success('ESLint report analysis complete. No errors found!')
-})
+  core.info('ESLint report analysis complete. No errors found!')
+  process.exit(0)
+}
+
+run()

@@ -8,7 +8,7 @@
     "build": "ncc build src/index.ts",
     "prestart": "npm run build",
     "start": "node dist/index.js",
-    "test": "jest",
+    "test": "GITHUB_ACTION=1 INPUT_GITHUB_TOKEN='secret123' jest",
     "lint": "eslint --ext .ts src",
     "lint:fix": "eslint --fix --ext .ts src",
     "lint:report": "eslint --ext .ts --output-file eslint_report.json --format json src"
@@ -18,20 +18,21 @@
     "url": "git+https://github.com/ataylorme/eslint-annotate-action.git"
   },
   "keywords": [],
-  "author": "Andrew Taylor <andrew@ataylor.me>",
+  "author": "Andrew Taylor <ataylorme@users.noreply.github.com>",
   "bugs": {
     "url": "https://github.com/ataylorme/eslint-annotate-action/issues"
   },
   "homepage": "https://github.com/ataylorme/eslint-annotate-action#readme",
   "dependencies": {
     "@actions/core": "^1.10.0",
+    "@actions/github": "^6.0.0",
     "@actions/glob": "^0.4.0",
     "@octokit/action": "^6.0.7",
-    "actions-toolkit": "^6.0.1",
     "dotenv": "^16.0.3"
   },
   "devDependencies": {
     "@octokit/webhooks-definitions": "^3.67.0",
+    "@types/eslint": "^8.56.2",
     "@types/jest": "^29.5.0",
     "@types/node": "^18.15.5",
     "@typescript-eslint/eslint-plugin": "^5.56.0",
