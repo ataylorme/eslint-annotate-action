@@ -32,7 +32,7 @@ jobs:
       - name: Annotate Code Linting Results
         uses: ./
         with:
-          repo-token: "${{ secrets.GITHUB_TOKEN }}"
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
           report-json: "eslint_report.json"
       - name: Upload ESLint report
         uses: actions/upload-artifact@v4
