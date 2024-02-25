@@ -1,7 +1,7 @@
 name: "ESLint Annotate from Report JSON"
 description: "Annotates pull request diffs with warnings and errors from an ESLint report JSON file."
 inputs:
-  repo-token:
+  GITHUB_TOKEN:
     description: "The 'GITHUB_TOKEN' secret"
     default: ${{ github.token }}
     required: true
