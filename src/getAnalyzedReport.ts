@@ -44,7 +44,12 @@ export default function getAnalyzedReport(files: ESLintReport): AnalyzedESLintRe
     // Loop through all the error/warning messages for the file
     for (const lintMessage of messages) {
       // Pull out information about the error/warning message
-      const {line, column, severity, ruleId, message} = lintMessage
+      const {column, severity, ruleId, message} = lintMessage
+      // Default line to 1 if it's not present
+      let {line} = lintMessage
+      if (!line) {
+        line = 1
+      }
 
       // If there's no rule ID (e.g. an ignored file warning), skip
       if (!ruleId && !message.startsWith(unusedDirectiveMessagePrefix)) continue
