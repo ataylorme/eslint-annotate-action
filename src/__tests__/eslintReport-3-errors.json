@@ -1,5 +1,7 @@
 [
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
     "filePath": "src/__tests__/eslintJsonReportToJs.test.ts",
     "messages": [
       {
@@ -8,7 +10,6 @@
         "message": "Delete `;`",
         "line": 20,
         "column": 6,
-        "nodeType": null,
         "endLine": 20,
         "endColumn": 7,
         "fix": {
@@ -25,7 +26,6 @@
         "message": "Delete `;`",
         "line": 21,
         "column": 52,
-        "nodeType": null,
         "endLine": 21,
         "endColumn": 53,
         "fix": {
@@ -42,7 +42,6 @@
         "message": "Insert `⏎`",
         "line": 25,
         "column": 3,
-        "nodeType": null,
         "endLine": 25,
         "endColumn": 3,
         "fix": {
@@ -62,6 +61,8 @@
     "usedDeprecatedRules": []
   },
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
     "filePath": "src/__tests__/getPullRequestFiles.test.ts",
     "messages": [],
     "errorCount": 0,
@@ -71,6 +72,8 @@
     "usedDeprecatedRules": []
   },
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
     "filePath": "src/constants.ts",
     "messages": [],
     "errorCount": 0,
@@ -80,6 +83,8 @@
     "usedDeprecatedRules": []
   },
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
     "filePath": "src/eslintJsonReportToJs.ts",
     "messages": [],
     "errorCount": 0,
@@ -89,6 +94,8 @@
     "usedDeprecatedRules": []
   },
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
     "filePath": "src/getPullRequestFiles.ts",
     "messages": [],
     "errorCount": 0,
@@ -98,6 +105,8 @@
     "usedDeprecatedRules": []
   },
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
     "filePath": "src/index.ts",
     "messages": [],
     "errorCount": 0,
@@ -107,6 +116,8 @@
     "usedDeprecatedRules": []
   },
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
     "filePath": "src/types.d.ts",
     "messages": [],
     "errorCount": 0,

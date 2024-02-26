@@ -1,5 +1,8 @@
 [
   {
+    "suppressedMessages": [],
+    "fatalErrorCount": 0,
+    "usedDeprecatedRules": [],
     "filePath": "src/form-validation/FormValidatorStrategyFactory.ts",
     "messages": [
       {

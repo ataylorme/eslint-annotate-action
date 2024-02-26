@@ -4,6 +4,9 @@ import {ESLintReport} from '../types'
 
 const reportJSExpected: ESLintReport = [
   {
+    suppressedMessages: [],
+    fatalErrorCount: 0,
+    usedDeprecatedRules: [],
     filePath: "src/form-validation/FormValidatorStrategyFactory.ts",
     messages: [
       {

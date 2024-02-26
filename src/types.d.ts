@@ -1,5 +1,4 @@
 import {ESLint as ESLintType} from '@types/eslint'
-export type eslintResultType = ESLintType.LintResult
 
 // https://www.npmjs.com/package/@octokit/types
 import {Endpoints, GetResponseDataTypeFromEndpointMethod} from '@octokit/types'
@@ -45,16 +44,18 @@ export interface ESLintMessage {
   messageId?: string
 }
 
-export interface ESLintEntry {
-  filePath: string
-  messages: ESLintMessage[]
-  errorCount: number
-  warningCount: number
-  fixableErrorCount: number
-  fixableWarningCount: number
-  source?: string
-  usedDeprecatedRules?: []
-}
+// export interface ESLintEntry {
+//   filePath: string
+//   messages: ESLintMessage[]
+//   errorCount: number
+//   warningCount: number
+//   fixableErrorCount: number
+//   fixableWarningCount: number
+//   source?: string
+//   usedDeprecatedRules?: []
+// }
+
+export type ESLintEntry = ESLintType.LintResult
 
 export type ESLintReport = ESLintEntry[]
 
