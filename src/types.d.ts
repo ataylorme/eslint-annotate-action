@@ -44,17 +44,6 @@ export interface ESLintMessage {
   messageId?: string
 }
 
-// export interface ESLintEntry {
-//   filePath: string
-//   messages: ESLintMessage[]
-//   errorCount: number
-//   warningCount: number
-//   fixableErrorCount: number
-//   fixableWarningCount: number
-//   source?: string
-//   usedDeprecatedRules?: []
-// }
-
 export type ESLintEntry = ESLintType.LintResult
 
 export type ESLintReport = ESLintEntry[]
