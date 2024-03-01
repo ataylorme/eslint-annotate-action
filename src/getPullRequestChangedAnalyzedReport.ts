@@ -39,6 +39,10 @@ export default async function getPullRequestChangedAnalyzedReport(
     markdown += `\n\n# Non-Pull Request Changed Files ESLint Results:\n**${analyzedNonPullRequestReport.summary}**\n${analyzedNonPullRequestReport.markdown}`
   }
 
+  if (markdown.length > 65535) {
+    markdown = markdown.slice(0, 65250) + '\n\n...summary too long, truncated.'
+  }
+
   return {
     errorCount: analyzedPullRequestReport.errorCount,
     warningCount: analyzedPullRequestReport.warningCount,
