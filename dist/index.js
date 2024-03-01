@@ -56338,7 +56338,7 @@ function getAnalyzedReport(files) {
         for (const lintMessage of messages) {
             // Pull out information about the error/warning message
             const { column, severity, ruleId, message } = lintMessage;
-            // eslintReport-1-error.ts
+            // Default line to 1 if it's not present
             let { line } = lintMessage;
             if (!line) {
                 line = 1;
@@ -56435,7 +56435,7 @@ Object.defineProperty(exports, "__esModule", ({ value: true }));
 const getPullRequestFiles_1 = __importDefault(__nccwpck_require__(2729));
 const getAnalyzedReport_1 = __importDefault(__nccwpck_require__(8481));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { GITHUB_WORKSPACE, OWNER, REPO, pullRequest } = constants_1.default;
+const { GITHUB_WORKSPACE, OWNER, REPO, pullRequest, onlyChangedFiles } = constants_1.default;
 /**
  * Analyzes an ESLint report, separating pull request changed files
  * @param reportJS a JavaScript representation of an ESLint JSON report
@@ -56451,30 +56451,27 @@ async function getPullRequestChangedAnalyzedReport(reportJS) {
         file.filePath = file.filePath.replace(GITHUB_WORKSPACE + '/', '');
         return changedFiles.indexOf(file.filePath) !== -1;
     });
-    const nonPullRequestFilesReportJS = reportJS.filter((file) => {
-        file.filePath = file.filePath.replace(GITHUB_WORKSPACE + '/', '');
-        return changedFiles.indexOf(file.filePath) === -1;
-    });
     const analyzedPullRequestReport = (0, getAnalyzedReport_1.default)(pullRequestFilesReportJS);
-    const analyzedNonPullRequestReport = (0, getAnalyzedReport_1.default)(nonPullRequestFilesReportJS);
-    const combinedSummary = `
-${analyzedPullRequestReport.summary} in pull request changed files.
-${analyzedNonPullRequestReport.summary} in files outside of the pull request.
-`;
-    const combinedMarkdown = `
-# Pull Request Changed Files ESLint Results:
-**${analyzedPullRequestReport.summary}**
-${analyzedPullRequestReport.markdown}
-# Non-Pull Request Changed Files ESLint Results:
-**${analyzedNonPullRequestReport.summary}**
-${analyzedNonPullRequestReport.markdown}
-`;
+    let summary = `${analyzedPullRequestReport.summary} in pull request changed files.`;
+    let markdown = `# Pull Request Changed Files ESLint Results:\n**${analyzedPullRequestReport.summary}**\n${analyzedPullRequestReport.markdown}`;
+    if (!onlyChangedFiles) {
+        const nonPullRequestFilesReportJS = reportJS.filter((file) => {
+            file.filePath = file.filePath.replace(GITHUB_WORKSPACE + '/', '');
+            return changedFiles.indexOf(file.filePath) === -1;
+        });
+        const analyzedNonPullRequestReport = (0, getAnalyzedReport_1.default)(nonPullRequestFilesReportJS);
+        summary += `${analyzedNonPullRequestReport.summary} in files outside of the pull request.`;
+        markdown += `\n\n# Non-Pull Request Changed Files ESLint Results:\n**${analyzedNonPullRequestReport.summary}**\n${analyzedNonPullRequestReport.markdown}`;
+    }
+    if (markdown.length > 65535) {
+        markdown = markdown.slice(0, 65250) + '\n\n...summary too long, truncated.';
+    }
     return {
         errorCount: analyzedPullRequestReport.errorCount,
         warningCount: analyzedPullRequestReport.warningCount,
-        markdown: combinedMarkdown,
+        markdown,
         success: analyzedPullRequestReport.success,
-        summary: combinedSummary,
+        summary,
         annotations: analyzedPullRequestReport.annotations,
     };
 }
