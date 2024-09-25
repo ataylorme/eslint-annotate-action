@@ -53,6 +53,14 @@ on: [pull_request]
 
 jobs:
   node_test:
+    permissions:
+      # Default permissions (matching what would be set if the permissions section was missing at all)
+      contents: read
+      packages: read
+
+      # Need to add these 2 for eslint-annotate-action
+      pull-requests: read
+      checks: write
     runs-on: ubuntu-latest
 
     steps:
