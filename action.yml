@@ -13,8 +13,12 @@ inputs:
     description: "Only annotate files changed when run on the 'pull_request' event"
     default: 'true'
     required: false
+  neutral-on-warning:
+    description: "Set neutral result for the GitHub Action when ESLint warnings are detected. Set to 'true' to enable."
+    default: 'false'
+    required: false
   fail-on-warning:
-    description: "Fail the GitHub Action when ESLint warnings are detected. Set to 'true' to enable."
+    description: "Fail the GitHub Action when ESLint warnings are detected. Set to 'true' to enable. Overrides 'neutral-on-warning'."
     default: 'false'
     required: false
   fail-on-error:
