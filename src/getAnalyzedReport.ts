@@ -1,6 +1,7 @@
 import type {ESLintReport, ChecksUpdateParamsOutputAnnotations, AnalyzedESLintReport} from './types'
 import constants from './constants'
-const {core, GITHUB_WORKSPACE, OWNER, REPO, SHA, failOnWarning, unusedDirectiveMessagePrefix} = constants
+const {core, GITHUB_WORKSPACE, OWNER, REPO, SHA, neutralOnWarning, failOnWarning, unusedDirectiveMessagePrefix} =
+  constants
 
 /**
  * Analyzes an ESLint report JS object and returns a report
@@ -123,7 +124,14 @@ export default function getAnalyzedReport(files: ESLintReport): AnalyzedESLintRe
   }
 
   let success = errorCount === 0
+  let conclusion = success ? 'success' : 'failure'
+
+  if (neutralOnWarning && warningCount > 0) {
+    conclusion = 'neutral'
+    success = false
+  }
   if (failOnWarning && warningCount > 0) {
+    conclusion = 'failure'
     success = false
   }
 
@@ -133,6 +141,7 @@ export default function getAnalyzedReport(files: ESLintReport): AnalyzedESLintRe
     warningCount,
     markdown: markdownText,
     success,
+    conclusion,
     summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
     annotations,
   }

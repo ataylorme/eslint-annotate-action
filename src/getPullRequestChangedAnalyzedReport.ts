@@ -9,7 +9,7 @@ const {GITHUB_WORKSPACE, OWNER, REPO, pullRequest, onlyChangedFiles} = constants
  * @param reportJS a JavaScript representation of an ESLint JSON report
  */
 export default async function getPullRequestChangedAnalyzedReport(
-  reportJS: ESLintReport,
+  reportJS: ESLintReport
 ): Promise<AnalyzedESLintReport> {
   const changedFiles = await getPullRequestFiles({
     owner: OWNER,
@@ -48,6 +48,7 @@ export default async function getPullRequestChangedAnalyzedReport(
     warningCount: analyzedPullRequestReport.warningCount,
     markdown,
     success: analyzedPullRequestReport.success,
+    conclusion: analyzedPullRequestReport.conclusion,
     summary,
     annotations: analyzedPullRequestReport.annotations,
   }

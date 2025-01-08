@@ -52,6 +52,7 @@ export interface AnalyzedESLintReport {
   errorCount: number
   warningCount: number
   success: boolean
+  conclusion: string
   markdown: string
   summary: string
   annotations: ChecksUpdateParamsOutputAnnotations[]
