@@ -16,7 +16,7 @@ async function run(): Promise<void> {
     ? await getPullRequestChangedAnalyzedReport(reportJS)
     : getAnalyzedReport(reportJS)
   const annotations = analyzedReport.annotations
-  const conclusion = analyzedReport.success ? 'success' : 'failure'
+  const conclusion = analyzedReport.conclusion
 
   core.info(analyzedReport.summary)
 

@@ -24,6 +24,7 @@ const reportAnalyzedExpected: AnalyzedESLintReport = {
     '  - From: [`no-sequences`]\n' +
     '\n',
   success: false,
+  conclusion: 'failure',
   summary: '3 ESLint error(s) and 0 ESLint warning(s) found',
   annotations: [
     {

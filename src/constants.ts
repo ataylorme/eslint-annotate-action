@@ -37,6 +37,7 @@ function getBooleanInput(inputName: string, defaultValue: string): boolean {
 
 function getInputs() {
   const onlyChangedFiles = getBooleanInput('only-pr-files', 'true')
+  const neutralOnWarning = getBooleanInput('neutral-on-warning', 'false')
   const failOnWarning = getBooleanInput('fail-on-warning', 'false')
   const failOnError = getBooleanInput('fail-on-error', 'true')
   const markdownReportOnStepSummary = getBooleanInput('markdown-report-on-step-summary', 'false')
@@ -47,6 +48,7 @@ function getInputs() {
 
   return {
     onlyChangedFiles,
+    neutralOnWarning,
     failOnWarning,
     failOnError,
     markdownReportOnStepSummary,
@@ -55,7 +57,15 @@ function getInputs() {
   }
 }
 
-const {onlyChangedFiles, failOnWarning, failOnError, markdownReportOnStepSummary, checkName, reportFile} = getInputs()
+const {
+  onlyChangedFiles,
+  neutralOnWarning,
+  failOnWarning,
+  failOnError,
+  markdownReportOnStepSummary,
+  checkName,
+  reportFile,
+} = getInputs()
 
 // https://github.com/eslint/eslint/blob/a59a4e6e9217b3cc503c0a702b9e3b02b20b980d/lib/linter/apply-disable-directives.js#L253
 const unusedDirectiveMessagePrefix = 'Unused eslint-disable directive'
@@ -81,6 +91,7 @@ export default {
   isPullRequest,
   isGitHubActions,
   getTimestamp,
+  neutralOnWarning,
   failOnWarning,
   failOnError,
   markdownReportOnStepSummary,
