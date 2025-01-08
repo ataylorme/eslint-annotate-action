@@ -135,8 +135,6 @@ export default function getAnalyzedReport(files: ESLintReport): AnalyzedESLintRe
     success = false
   }
 
-  core.info(`Conclusion ${conclusion}`)
-
   // Return the ESLint report analysis
   return {
     errorCount,
