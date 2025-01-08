@@ -56005,6 +56005,84 @@ exports["default"] = addAnnotationsToStatusCheck;
 
 /***/ }),
 
+/***/ 4964:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const createIssueComment_1 = __importDefault(__nccwpck_require__(5589));
+const constants_1 = __importDefault(__nccwpck_require__(9042));
+const { OWNER, REPO, pullRequest, octokit, core } = constants_1.default;
+/**
+ * Adds a comment to the PR with the results of the analysis
+ * @param summary the (markdown) body of the comment
+ * @return the id of the created comment
+ */
+async function addComment(report, checkId) {
+    const linkPre = `[See full ESlint report](${pullRequest.html_url}/checks?check_run_id=`;
+    const linkPost = `)`;
+    let icon;
+    if (report.errorCount > 0) {
+        icon = '❌';
+    }
+    else if (report.warningCount > 0) {
+        icon = '⚠️';
+    }
+    else {
+        icon = '✅';
+    }
+    const body = `## ${icon} ESlint summary\n\n${report.summary}\n\n ${linkPre}${checkId}${linkPost}`;
+    // Delete an existing comment that matches the first part of the link
+    // The checkId will be different on every run, so qwe cannot use it to search for the link
+    await deleteComment(linkPre);
+    const createCommentResponse = await (0, createIssueComment_1.default)({
+        owner: OWNER,
+        repo: REPO,
+        issue_number: pullRequest.number,
+        body: body,
+    });
+    core.debug(`Created comment ${createCommentResponse.id}`);
+    return createCommentResponse.id;
+}
+exports["default"] = addComment;
+// Private function to delete an existing comment given text to search for
+async function deleteComment(shouldContainText) {
+    const comments = await octokit.issues.listComments({
+        owner: OWNER,
+        repo: REPO,
+        issue_number: pullRequest.number,
+    });
+    // Find the first comment that contains the text.
+    // Will search up to 100 comments, which can be increased by adding the
+    // `per_page` parameter or by iterating over pages
+    const myComment = comments.data.find((comment) => comment.body?.includes(shouldContainText));
+    const commentId = myComment ? myComment.id : null;
+    if (commentId) {
+        core.debug(`Found comment ${commentId}`);
+        const deleteResult = await octokit.issues.deleteComment({
+            owner: OWNER,
+            repo: REPO,
+            comment_id: commentId,
+        });
+        if (deleteResult.status >= 200 && deleteResult.status < 300) {
+            core.debug(`Deleted existing comment ${commentId}`);
+        }
+        else {
+            core.warning(`Unable to delete comment ${commentId}: ${deleteResult.data}`);
+        }
+    }
+    else {
+        core.debug(`No existing comment found with text ${shouldContainText}`);
+    }
+}
+
+
+/***/ }),
+
 /***/ 5577:
 /***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
 
@@ -56152,6 +56230,7 @@ function getInputs() {
     const failOnWarning = getBooleanInput('fail-on-warning', 'false');
     const failOnError = getBooleanInput('fail-on-error', 'true');
     const markdownReportOnStepSummary = getBooleanInput('markdown-report-on-step-summary', 'false');
+    const postPrComment = getBooleanInput('post-comment', 'false');
     const checkName = core.getInput('check-name') || 'ESLint Report Analysis';
     const reportFile = areTesting
         ? 'src/__tests__/eslintReport-3-errors.json'
@@ -56161,11 +56240,12 @@ function getInputs() {
         failOnWarning,
         failOnError,
         markdownReportOnStepSummary,
+        postPrComment,
         checkName,
         reportFile,
     };
 }
-const { onlyChangedFiles, failOnWarning, failOnError, markdownReportOnStepSummary, checkName, reportFile } = getInputs();
+const { onlyChangedFiles, failOnWarning, failOnError, markdownReportOnStepSummary, postPrComment, checkName, reportFile, } = getInputs();
 // https://github.com/eslint/eslint/blob/a59a4e6e9217b3cc503c0a702b9e3b02b20b980d/lib/linter/apply-disable-directives.js#L253
 const unusedDirectiveMessagePrefix = 'Unused eslint-disable directive';
 const getTimestamp = () => {
@@ -56191,8 +56271,40 @@ exports["default"] = {
     failOnWarning,
     failOnError,
     markdownReportOnStepSummary,
+    postPrComment,
     unusedDirectiveMessagePrefix,
 };
+
+
+/***/ }),
+
+/***/ 5589:
+/***/ (function(__unused_webpack_module, exports, __nccwpck_require__) {
+
+"use strict";
+
+var __importDefault = (this && this.__importDefault) || function (mod) {
+    return (mod && mod.__esModule) ? mod : { "default": mod };
+};
+Object.defineProperty(exports, "__esModule", ({ value: true }));
+const constants_1 = __importDefault(__nccwpck_require__(9042));
+const { octokit } = constants_1.default;
+/**
+ * Create a new issue comment on GitHub
+ * @param options octokit.issues.createComment parameters
+ */
+async function createIssueComment(options) {
+    try {
+        // https://docs.github.com/en/rest/issues/comments?apiVersion=2022-11-28#create-an-issue-comment
+        // https://octokit.github.io/rest.js/v21/#issues-create-comment
+        const response = await octokit.issues.createComment(options);
+        return Promise.resolve(response.data);
+    }
+    catch (error) {
+        return Promise.reject(error);
+    }
+}
+exports["default"] = createIssueComment;
 
 
 /***/ }),
@@ -56553,7 +56665,8 @@ const addAnnotationsToStatusCheck_1 = __importDefault(__nccwpck_require__(822));
 const getPullRequestChangedAnalyzedReport_1 = __importDefault(__nccwpck_require__(6474));
 const addSummary_1 = __importDefault(__nccwpck_require__(5577));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary } = constants_1.default;
+const addComment_1 = __importDefault(__nccwpck_require__(4964));
+const { reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary, postPrComment, isPullRequest, } = constants_1.default;
 async function run() {
     core.info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`);
     const reportJS = await (0, eslintJsonReportToJs_1.default)(reportFile);
@@ -56571,12 +56684,16 @@ async function run() {
         const checkId = await (0, openStatusCheck_1.default)();
         // Add all the annotations to the status check
         await (0, addAnnotationsToStatusCheck_1.default)(annotations, checkId);
-        // Add report to job summary
-        if (markdownReportOnStepSummary) {
+        // Add report to job summary if requested or a PR comment was requested
+        if (markdownReportOnStepSummary || (postPrComment && isPullRequest)) {
             await (0, addSummary_1.default)(analyzedReport.markdown);
         }
         // Finally, close the GitHub check as completed
         await (0, closeStatusCheck_1.default)(conclusion, checkId, analyzedReport.summary, markdownReportOnStepSummary ? analyzedReport.markdown : '');
+        // Post result as comment if requested and the run was triggered by a PR
+        if (postPrComment && isPullRequest) {
+            await (0, addComment_1.default)(analyzedReport, checkId);
+        }
         // Fail the Action if the report analysis conclusions is failure
         if ((failOnWarning || failOnError) && conclusion === 'failure') {
             core.setFailed(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`);

@@ -29,6 +29,11 @@ inputs:
     description: "Whether to show a markdown report in the step summary."
     default: 'false'
     required: false
+  post-comment:
+    description: "Whether to post a PR comment with a report summary."
+    default: 'false'
+    required: false
+
 runs:
   using: "node20"
   main: "dist/index.js"

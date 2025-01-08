@@ -7,9 +7,13 @@ import {Webhooks} from '@octokit/webhooks-definitions'
 // GitHub Octokit Types
 export type prFilesParametersType = Endpoints['GET /repos/:owner/:repo/pulls/:pull_number/files']['parameters']
 export type prFilesResponseType = Endpoints['GET /repos/:owner/:repo/pulls/:pull_number/files']['response']
+export type createIssueCommentParametersType = Endpoints['POST /repos/:owner/:repo/issues/:issue_number']['parameters']
 export type checkUpdateParametersType = Endpoints['PATCH /repos/:owner/:repo/check-runs/:check_run_id']['parameters']
 export type checkCreateParametersType = Endpoints['POST /repos/:owner/:repo/check-runs']['parameters']
 export type pullRequestWebhook = Webhooks['pull_request']
+export type createIssueCommentResponseDataType = GetResponseDataTypeFromEndpointMethod<
+  typeof octokit.issues.createComment
+>
 export type createCheckRunResponseDataType = GetResponseDataTypeFromEndpointMethod<typeof octokit.checks.create>
 export type updateCheckRunResponseDataType = GetResponseDataTypeFromEndpointMethod<typeof octokit.checks.update>
 

@@ -7,7 +7,16 @@ import addAnnotationsToStatusCheck from './addAnnotationsToStatusCheck'
 import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzedReport'
 import addSummary from './addSummary'
 import constants from './constants'
-const {reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary} = constants
+import addComment from './addComment'
+const {
+  reportFile,
+  onlyChangedFiles,
+  failOnError,
+  failOnWarning,
+  markdownReportOnStepSummary,
+  postPrComment,
+  isPullRequest,
+} = constants
 
 async function run(): Promise<void> {
   core.info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`)
@@ -31,8 +40,8 @@ async function run(): Promise<void> {
     // Add all the annotations to the status check
     await addAnnotationsToStatusCheck(annotations, checkId)
 
-    // Add report to job summary
-    if (markdownReportOnStepSummary) {
+    // Add report to job summary if requested or a PR comment was requested
+    if (markdownReportOnStepSummary || (postPrComment && isPullRequest)) {
       await addSummary(analyzedReport.markdown)
     }
 
@@ -43,6 +52,11 @@ async function run(): Promise<void> {
       analyzedReport.summary,
       markdownReportOnStepSummary ? analyzedReport.markdown : '',
     )
+
+    // Post result as comment if requested and the run was triggered by a PR
+    if (postPrComment && isPullRequest) {
+      await addComment(analyzedReport, checkId)
+    }
 
     // Fail the Action if the report analysis conclusions is failure
     if ((failOnWarning || failOnError) && conclusion === 'failure') {
