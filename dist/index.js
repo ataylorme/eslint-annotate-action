@@ -56149,6 +56149,7 @@ function getBooleanInput(inputName, defaultValue) {
 }
 function getInputs() {
     const onlyChangedFiles = getBooleanInput('only-pr-files', 'true');
+    const neutralOnWarning = getBooleanInput('neutral-on-warning', 'false');
     const failOnWarning = getBooleanInput('fail-on-warning', 'false');
     const failOnError = getBooleanInput('fail-on-error', 'true');
     const markdownReportOnStepSummary = getBooleanInput('markdown-report-on-step-summary', 'false');
@@ -56158,6 +56159,7 @@ function getInputs() {
         : core.getInput('report-json', { required: true });
     return {
         onlyChangedFiles,
+        neutralOnWarning,
         failOnWarning,
         failOnError,
         markdownReportOnStepSummary,
@@ -56165,7 +56167,7 @@ function getInputs() {
         reportFile,
     };
 }
-const { onlyChangedFiles, failOnWarning, failOnError, markdownReportOnStepSummary, checkName, reportFile } = getInputs();
+const { onlyChangedFiles, neutralOnWarning, failOnWarning, failOnError, markdownReportOnStepSummary, checkName, reportFile, } = getInputs();
 // https://github.com/eslint/eslint/blob/a59a4e6e9217b3cc503c0a702b9e3b02b20b980d/lib/linter/apply-disable-directives.js#L253
 const unusedDirectiveMessagePrefix = 'Unused eslint-disable directive';
 const getTimestamp = () => {
@@ -56188,6 +56190,7 @@ exports["default"] = {
     isPullRequest,
     isGitHubActions,
     getTimestamp,
+    neutralOnWarning,
     failOnWarning,
     failOnError,
     markdownReportOnStepSummary,
@@ -56302,7 +56305,7 @@ var __importDefault = (this && this.__importDefault) || function (mod) {
 };
 Object.defineProperty(exports, "__esModule", ({ value: true }));
 const constants_1 = __importDefault(__nccwpck_require__(9042));
-const { core, GITHUB_WORKSPACE, OWNER, REPO, SHA, failOnWarning, unusedDirectiveMessagePrefix } = constants_1.default;
+const { core, GITHUB_WORKSPACE, OWNER, REPO, SHA, neutralOnWarning, failOnWarning, unusedDirectiveMessagePrefix } = constants_1.default;
 /**
  * Analyzes an ESLint report JS object and returns a report
  * @param files a JavaScript representation of an ESLint JSON report
@@ -56405,7 +56408,13 @@ function getAnalyzedReport(files) {
         markdownText += warningText + '\n';
     }
     let success = errorCount === 0;
+    let conclusion = success ? 'success' : 'failure';
+    if (neutralOnWarning && warningCount > 0) {
+        conclusion = 'neutral';
+        success = false;
+    }
     if (failOnWarning && warningCount > 0) {
+        conclusion = 'failure';
         success = false;
     }
     // Return the ESLint report analysis
@@ -56414,6 +56423,7 @@ function getAnalyzedReport(files) {
         warningCount,
         markdown: markdownText,
         success,
+        conclusion,
         summary: `${errorCount} ESLint error(s) and ${warningCount} ESLint warning(s) found`,
         annotations,
     };
@@ -56471,6 +56481,7 @@ async function getPullRequestChangedAnalyzedReport(reportJS) {
         warningCount: analyzedPullRequestReport.warningCount,
         markdown,
         success: analyzedPullRequestReport.success,
+        conclusion: analyzedPullRequestReport.conclusion,
         summary,
         annotations: analyzedPullRequestReport.annotations,
     };
@@ -56561,7 +56572,7 @@ async function run() {
         ? await (0, getPullRequestChangedAnalyzedReport_1.default)(reportJS)
         : (0, getAnalyzedReport_1.default)(reportJS);
     const annotations = analyzedReport.annotations;
-    const conclusion = analyzedReport.success ? 'success' : 'failure';
+    const conclusion = analyzedReport.conclusion;
     core.info(analyzedReport.summary);
     core.setOutput('summary', analyzedReport.summary);
     core.setOutput('errorCount', analyzedReport.errorCount);
