@@ -129,10 +129,13 @@ export default function getAnalyzedReport(files: ESLintReport): AnalyzedESLintRe
   if (neutralOnWarning && warningCount > 0) {
     conclusion = 'neutral'
     success = false
-  } else if (failOnWarning && warningCount > 0) {
+  }
+  if (failOnWarning && warningCount > 0) {
     conclusion = 'failure'
     success = false
   }
+
+  core.info(`Conclusion ${conclusion}`)
 
   // Return the ESLint report analysis
   return {
