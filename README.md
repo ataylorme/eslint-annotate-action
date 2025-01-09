@@ -16,6 +16,10 @@ On `push` creates a `ESLint Report Analysis` with a summary of errors and warnin
 
 ![image](./assets/eslint-annotate-action-push-report-example.png)
 
+Can post a comment on the pull request with lint results, linking to a full report.
+
+![image](./assets/eslint-annotate-action-pr-comment-example.png)
+
 ## Why another ESLint action?
 
 The others I tried to use ran ESLint in NodeJS themselves. With this action, I can take an ESLint report generated from the command line and process the results.
@@ -33,6 +37,7 @@ This allows for more flexibility on how ESLint is run. This action is agnostic e
 | `fail-on-error` | Whether to fail the Github action when ESLint errors are detected. If set to false, the check that is created will still fail on ESLint errors. | No | `true` |
 | `check-name` | The name of the GitHub status check created. | No | `ESLint Report Analysis` |
 | `markdown-report-on-step-summary` | Whether to show a markdown report in the step summary. | No | `false` |
+| `post-comment` | Whether to post a PR comment with a report summary. | No | `false` |
 
 ## Outputs
 
@@ -59,7 +64,7 @@ jobs:
       packages: read
 
       # Need to add these 2 for eslint-annotate-action
-      pull-requests: read
+      pull-requests: write
       checks: write
     runs-on: ubuntu-latest
 

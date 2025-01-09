@@ -40,6 +40,8 @@ function getInputs() {
   const failOnWarning = getBooleanInput('fail-on-warning', 'false')
   const failOnError = getBooleanInput('fail-on-error', 'true')
   const markdownReportOnStepSummary = getBooleanInput('markdown-report-on-step-summary', 'false')
+  const postPrComment = getBooleanInput('post-comment', 'false')
+
   const checkName = core.getInput('check-name') || 'ESLint Report Analysis'
   const reportFile = areTesting
     ? 'src/__tests__/eslintReport-3-errors.json'
@@ -50,12 +52,21 @@ function getInputs() {
     failOnWarning,
     failOnError,
     markdownReportOnStepSummary,
+    postPrComment,
     checkName,
     reportFile,
   }
 }
 
-const {onlyChangedFiles, failOnWarning, failOnError, markdownReportOnStepSummary, checkName, reportFile} = getInputs()
+const {
+  onlyChangedFiles,
+  failOnWarning,
+  failOnError,
+  markdownReportOnStepSummary,
+  postPrComment,
+  checkName,
+  reportFile,
+} = getInputs()
 
 // https://github.com/eslint/eslint/blob/a59a4e6e9217b3cc503c0a702b9e3b02b20b980d/lib/linter/apply-disable-directives.js#L253
 const unusedDirectiveMessagePrefix = 'Unused eslint-disable directive'
@@ -84,5 +95,6 @@ export default {
   failOnWarning,
   failOnError,
   markdownReportOnStepSummary,
+  postPrComment,
   unusedDirectiveMessagePrefix,
 }
