@@ -12,6 +12,73 @@ permissions:  # added using https://github.com/step-security/secure-repo
   contents: read
 
 jobs:
+  typescript-lint:
+    if: github.event.pull_request.draft == false
+    runs-on: ubuntu-latest
+    timeout-minutes: 25
+    strategy:
+      fail-fast: false
+      max-parallel: 4
+
+    permissions:
+      contents: 'read' # for actions/checkout to fetch code
+      pull-requests: 'write' # to add comments in pull request
+      id-token: 'write'
+      checks: 'write'
+
+    steps:
+      - name: Harden Runner
+        uses: step-security/harden-runner@cb605e52c26070c328afc4562f0b4ada7618a84e # v2.10.4
+        with:
+          egress-policy: block
+          disable-sudo: true
+          allowed-endpoints: >
+            api.github.com:443
+            downloads.sentry-cdn.com:443
+            github.com:443
+            objects.githubusercontent.com:443
+            registry.npmjs.org:443
+
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          fetch-depth: 0
+
+      - name: Get diff lines
+        id: diff
+        uses: Equip-Collaboration/diff-line-numbers@e752977e2cb4207d671bb9e4dad18c07c1b73d52
+        with:
+          include: '["src/.*/.+\\.ts$"]'
+
+      - name: Detecting files changed
+        id: files
+        uses: umani/changed-files@138acc60bcaa548e0c194fc69ed36321ee8466d2 # v4.2.0
+        with:
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          pattern: 'src/.*/.+\\.ts$'
+
+      - name: List files changed (you can remove this step, for monitoring only)
+        run: |
+          echo "Files modified: $FILES_CHANGED"
+          echo "Files added: $FILES_ADDED"
+          echo "Files removed: $FILES_DELETED"
+          echo "Line Numbers: $LINE_NUMBERS"
+        env:
+          FILES_CHANGED: ${{steps.files.outputs.files_updated}}
+          FILES_ADDED: ${{steps.files.outputs.files_created}}
+          FILES_DELETED: ${{steps.files.outputs.files_deleted}}
+          LINE_NUMBERS: ${{ toJSON(steps.diff.outputs.lineNumbers) }}
+
+      - uses: snapshift/action-check-typescript@0e25ee8039f7f92080a6bea8b3d60fa4ab70acb2 # v1.1.0
+        with:
+          ts-config-path: './tsconfig.check.json'
+          repo-token: ${{ secrets.GITHUB_TOKEN }}
+          use-check: true
+          check-fail-mode: added
+          files-changed: ${{steps.files.outputs.files_updated}}
+          files-added: ${{steps.files.outputs.files_created}}
+          files-deleted: ${{steps.files.outputs.files_deleted}}
+          line-numbers: ${{steps.diff.outputs.lineNumbers}}
+
   node_test:
     runs-on: ubuntu-latest
     permissions:

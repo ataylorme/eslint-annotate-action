@@ -1,50 +1,48 @@
-import typescriptEslint from "@typescript-eslint/eslint-plugin";
-import prettier from "eslint-plugin-prettier";
+import eslint from '@eslint/js';
+import tseslint from 'typescript-eslint';
+import importPlugin from 'eslint-plugin-import';
+import pluginVue from 'eslint-plugin-vue'
+import eslintConfigPrettier from "eslint-config-prettier";
+import diff from 'eslint-plugin-diff';
 import globals from "globals";
-import tsParser from "@typescript-eslint/parser";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import js from "@eslint/js";
-import { FlatCompat } from "@eslint/eslintrc";
 
-const __filename = fileURLToPath(import.meta.url);
-const __dirname = path.dirname(__filename);
-const compat = new FlatCompat({
-    baseDirectory: __dirname,
-    recommendedConfig: js.configs.recommended,
-    allConfig: js.configs.all
-});
 
-export default [{
-    ignores: ["**/*.js", "!.github"],
-}, ...compat.extends(
-    "eslint:recommended",
-    "plugin:@typescript-eslint/recommended",
-    "plugin:prettier/recommended",
-), {
-    plugins: {
-        "@typescript-eslint": typescriptEslint,
-        prettier,
+export default [
+    {
+        ignores: [
+            "!.github",
+            "node_modules/**",
+            "**/*.js",
+        ]
     },
-    languageOptions: {
-        globals: {
-            ...globals.node,
-            ...globals.jest,
+    eslint.configs.recommended,
+    importPlugin.flatConfigs.recommended,
+    importPlugin.flatConfigs.typescript,
+    ...tseslint.configs.recommended,
+    {
+        plugins: {
+            'typescript-eslint': tseslint.plugin,
+            diff,
         },
-
-        parser: tsParser,
-        ecmaVersion: 2018,
-        sourceType: "module",
+        languageOptions: {
+            globals: {
+                ...globals.node,
+                ...globals.jest
+            },
+            ecmaVersion: 2022,
+            parserOptions: {
+                parser: tseslint.parser,
+                sourceType: 'module',
+            },
+        },
+        settings: {
+            "import/resolver": {
+                typescript: {
+                    project: "./tsconfig.json",
+                },
+            },
+        },
     },
-    rules: {
-        "prettier/prettier": ["error", {
-            singleQuote: true,
-            trailingComma: "all",
-            bracketSpacing: false,
-            printWidth: 120,
-            tabWidth: 2,
-            semi: false,
-        }],
-        camelcase: "off",
-    },
-}];
+    // remove any rules that prettier handles for us
+    eslintConfigPrettier,
+];
