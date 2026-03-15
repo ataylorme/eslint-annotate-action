@@ -1,98 +1,147 @@
 # ESLint Annotate from Report JSON
 
-## Version `3.0.0`
+## Version `4.0.0`
 
-See the [Changelog](./CHANGELOG.md) for breaking changes when upgrading from `v1` or `v2`
+> **Upgrading from v3?** See the [Changelog](./CHANGELOG.md) for breaking changes.
+> **Still on v2/v3?** Those branches remain available but are no longer maintained.
 
 ## Description
 
-Analyzes an ESLint a report JSON file and posts the results.
+Reads an ESLint JSON report file and posts the results as GitHub Check annotations.
 
-On `pull_request` annotates the pull request diff with warnings and errors
+On `pull_request`, annotates the diff with warnings and errors:
 
 ![image](./assets/eslint-annotate-action-pr-error-example.png)
 
-On `push` creates a `ESLint Report Analysis` with a summary of errors and warnings, including links to the line numbers of the violations.
+On `push`, creates an `ESLint Report Analysis` check with a full summary including links to each violation:
 
 ![image](./assets/eslint-annotate-action-push-report-example.png)
 
 ## Why another ESLint action?
 
-The others I tried to use ran ESLint in NodeJS themselves. With this action, I can take an ESLint report generated from the command line and process the results.
+This action does not run ESLint itself — it processes a report JSON file you produce however you like. That makes it agnostic to your ESLint config, plugins, and execution environment.
 
-This allows for more flexibility on how ESLint is run. This action is agnostic enough to handle different configurations, extensions, etc. across projects without making assumptions on how ESLint should be run.
+## Requirements
+
+- **Node 24** on your runner (or use `actions/setup-node` with `node-version: '24'`)
+- Workflow permissions: `checks: write` (required), `pull-requests: read` (required for `only-pr-files` or `post-comment`)
 
 ## Inputs
 
-| Name | Description | Required | Default Value |
+| Name | Description | Required | Default |
 |---|---|---|---|
-| `GITHUB_TOKEN` | The [`GITHUB_TOKEN` secret](https://docs.github.com/en/actions/configuring-and-managing-workflows/authenticating-with-the-github_token#about-the-github_token-secret) | No | `${{ github.token }}` |
-| `report-json` | Path or [glob pattern](https://github.com/actions/toolkit/tree/master/packages/glob) to locate the ESLint report JSON file. Use multiple lines to specify multiple glob patterns. | No | `eslint_report.json` |
-| `only-pr-files` | Only annotate files changed when run on the `pull_request` event | No | `true` |
-| `fail-on-warning` | Fail the GitHub Action when ESLint warnings are detected. Set to `true` to enable. | No | `false` |
-| `fail-on-error` | Whether to fail the Github action when ESLint errors are detected. If set to false, the check that is created will still fail on ESLint errors. | No | `true` |
-| `check-name` | The name of the GitHub status check created. | No | `ESLint Report Analysis` |
-| `markdown-report-on-step-summary` | Whether to show a markdown report in the step summary. | No | `false` |
+| `github-token` | The [`GITHUB_TOKEN` secret](https://docs.github.com/en/actions/security-guides/automatic-token-authentication) | Yes | — |
+| `report-json` | Path or [glob pattern](https://github.com/actions/toolkit/tree/master/packages/glob) to the ESLint JSON report file. Multiple lines = multiple patterns, results are merged. | No | `eslint_report.json` |
+| `only-pr-files` | Only annotate files changed in the pull request (ignored on non-`pull_request` events) | No | `true` |
+| `fail-on-warning` | Fail the check when ESLint warnings are detected | No | `false` |
+| `fail-on-error` | Fail the check when ESLint errors are detected | No | `true` |
+| `neutral-on-warning` | Set check conclusion to `neutral` (instead of `success`) when there are warnings but no errors and `fail-on-warning` is `false` | No | `false` |
+| `check-name` | Name of the GitHub Check created | No | `ESLint Report Analysis` |
+| `markdown-report-on-step-summary` | Write the markdown summary to the GitHub Actions job summary | No | `false` |
+| `post-comment` | Post (or replace) a PR comment with the ESLint summary | No | `false` |
 
 ## Outputs
 
 | Name | Description |
 |---|---|
-| `summary` | A short description of the error and warning count |
-| `errorCount` | The amount of errors ESLint reported on |
-| `warningCount` | The amount of warnings ESLint reported on |
+| `summary` | Short description of the error and warning counts |
+| `errorCount` | Number of ESLint errors |
+| `warningCount` | Number of ESLint warnings |
 
-## Usage Example
+## Usage
 
-In `.github/workflows/nodejs.yml`:
+### Basic example
 
-```yml
-name: Example NodeJS Workflow
+```yaml
+name: Node.js CI
 
-on: [pull_request]
+on: [pull_request, push]
 
 jobs:
-  node_test:
-    permissions:
-      # Default permissions (matching what would be set if the permissions section was missing at all)
-      contents: read
-      packages: read
-
-      # Need to add these 2 for eslint-annotate-action
-      pull-requests: read
-      checks: write
+  lint:
     runs-on: ubuntu-latest
+    permissions:
+      checks: write
+      pull-requests: read
 
     steps:
       - uses: actions/checkout@v4
-      - name: Setup Node
-        uses: actions/setup-node@v4
+
+      - uses: actions/setup-node@v4
         with:
-          node-version: 20
-          cache: 'npm'
-      - name: Install Node Dependencies
-        run: npm ci
-        env:
-          CI: TRUE
-      - name: Test Code Linting
-        run: npm run lint
-      - name: Save Code Linting Report JSON
-        # npm script for ESLint
-        # eslint --output-file eslint_report.json --format json src
-        # See https://eslint.org/docs/user-guide/command-line-interface#options
+          node-version: '24'
+          cache: npm
+
+      - run: npm ci
+
+      - name: Save ESLint report
         run: npm run lint:report
-        # Continue to the next step even if this fails
         continue-on-error: true
-      - name: Annotate Code Linting Results
-        uses: ataylorme/eslint-annotate-action@v3
+
+      - name: Annotate ESLint results
+        uses: ataylorme/eslint-annotate-action@v4
         with:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          report-json: "eslint_report.json"
-      # OPTIONAL: save a copy of the usage report for download or use in another job
-      # - name: Upload ESLint report
-      #   uses: actions/upload-artifact@v4
-      #   with:
-      #     name: eslint_report.json
-      #     path: eslint_report.json
-      #     retention-days: 5
+          github-token: ${{ secrets.GITHUB_TOKEN }}
 ```
+
+> The `lint:report` npm script should run ESLint with `--output-file eslint_report.json --format json`. For example:
+> ```json
+> "lint:report": "eslint --output-file eslint_report.json --format json src"
+> ```
+
+### With PR comment
+
+Post a sticky comment on pull requests summarising the ESLint results. The comment is replaced on each run so the PR stays clean.
+
+```yaml
+      - name: Annotate ESLint results
+        uses: ataylorme/eslint-annotate-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          post-comment: true
+```
+
+### Treat warnings as neutral (not success)
+
+```yaml
+      - name: Annotate ESLint results
+        uses: ataylorme/eslint-annotate-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          neutral-on-warning: true
+```
+
+### Multiple report files (glob)
+
+```yaml
+      - name: Annotate ESLint results
+        uses: ataylorme/eslint-annotate-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+          report-json: |
+            packages/*/eslint_report.json
+            apps/*/eslint_report.json
+```
+
+### Save a copy of the report as an artifact
+
+```yaml
+      - name: Annotate ESLint results
+        uses: ataylorme/eslint-annotate-action@v4
+        with:
+          github-token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Upload ESLint report
+        uses: actions/upload-artifact@v4
+        with:
+          name: eslint_report.json
+          path: eslint_report.json
+          retention-days: 5
+```
+
+## Migrating from v3
+
+1. Replace `uses: ataylorme/eslint-annotate-action@v3` with `@v4`
+2. Rename the `GITHUB_TOKEN` input to `github-token`
+3. Add `node-version: '24'` to your `actions/setup-node` step (or ensure Node 24 is on your runner)
+4. Ensure your workflow has `permissions: checks: write`
