@@ -1,10 +1,27 @@
-import getAnalyzedReport from '../getAnalyzedReport.js'
-import eslintJsonReportToJs from '../eslintJsonReportToJs.js'
+import {jest} from '@jest/globals'
 import reportAnalyzedExpected from './eslintReport-3-errors-analyzed.js'
 import indentationReportAnalyzedExpected from './eslintReport-1-error-analyzed.js'
 import unusedDisabledDirectiveAnalyzedExpected from './eslintReport-unused-eslint-disable-directive-analyzed.js'
 import fatalErrorAnalyzedExpected from './eslintReport-fatal-error-analyzed.js'
 import warningAnalyzedExpected from './eslintReport-1-warning-analyzed.js'
+
+const MOCK_SHA = '8e80ec28fec6ef9763aacbabb452bcb5d92315ca'
+
+jest.unstable_mockModule('../constants.js', () => ({
+  default: {
+    GITHUB_WORKSPACE: '',
+    OWNER: 'ataylorme',
+    REPO: 'eslint-annotate-github-action',
+    SHA: MOCK_SHA,
+    failOnWarning: false,
+    unusedDirectiveMessagePrefix: 'Unused eslint-disable directive',
+    checkName: 'ESLint Report Analysis',
+    core: {info: jest.fn(), setFailed: jest.fn()},
+  },
+}))
+
+const {default: getAnalyzedReport} = await import('../getAnalyzedReport.js')
+const {default: eslintJsonReportToJs} = await import('../eslintJsonReportToJs.js')
 
 const cwd = process.cwd()
 
@@ -60,8 +77,8 @@ describe('getAnalyzedReport', () => {
   })
 
   it('passes absolute paths through unchanged when GITHUB_WORKSPACE is not set', () => {
-    // In the test environment GITHUB_WORKSPACE is not set, so constants.GITHUB_WORKSPACE = ''.
-    // The stripping logic is a no-op and absolute paths appear in annotations as-is.
+    // In the test environment GITHUB_WORKSPACE is '', so the stripping logic is a no-op
+    // and absolute paths appear in annotations as-is.
     const reportJS = [
       {
         filePath: '/home/runner/work/repo/src/app.ts',
