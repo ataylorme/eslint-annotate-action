@@ -65,9 +65,9 @@ jobs:
       pull-requests: read
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
 
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: '24'
           cache: npm
@@ -132,7 +132,7 @@ Post a sticky comment on pull requests summarising the ESLint results. The comme
           github-token: ${{ secrets.GITHUB_TOKEN }}
 
       - name: Upload ESLint report
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v7
         with:
           name: eslint_report.json
           path: eslint_report.json
