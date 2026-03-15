@@ -14,7 +14,7 @@
   "scripts": {
     "build": "npm run format:write && npm run package",
     "package": "rimraf ./dist && rollup --config rollup.config.mjs",
-    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 GITHUB_ACTION=1 INPUT_GITHUB_TOKEN=secret123 GITHUB_SHA=8e80ec28fec6ef9763aacbabb452bcb5d92315ca GITHUB_REPOSITORY=ataylorme/eslint-annotate-github-action jest",
+    "test": "NODE_OPTIONS=--experimental-vm-modules NODE_NO_WARNINGS=1 jest",
     "lint": "eslint .",
     "lint:fix": "eslint --fix .",
     "lint:report": "eslint --output-file eslint_report.json --format json src",

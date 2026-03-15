@@ -37408,7 +37408,7 @@ function getOctokit(token, options, ...additionalPlugins) {
     return new GitHubWithPlugins(getOctokitOptions(token));
 }
 
-const token = getInput('GITHUB_TOKEN', { required: true });
+const token = getInput('github-token', { required: true });
 const octokit = getOctokit(token);
 const isPullRequest = 'pull_request' in context.payload;
 const pullRequest$2 = isPullRequest

@@ -2,7 +2,7 @@ import * as core from '@actions/core'
 import { context, getOctokit } from '@actions/github'
 import type { PullRequestPayload } from './types.js'
 
-const token = core.getInput('GITHUB_TOKEN', { required: true })
+const token = core.getInput('github-token', { required: true })
 export const octokit = getOctokit(token)
 
 const isPullRequest = 'pull_request' in context.payload

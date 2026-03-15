@@ -3,7 +3,7 @@
 // when constants.ts initialises its module-level singletons.
 
 process.env['GITHUB_ACTION'] = '1'
-process.env['INPUT_GITHUB_TOKEN'] = 'secret123'
+process.env['INPUT_GITHUB-TOKEN'] = 'secret123'
 process.env['INPUT_REPORT-JSON'] = 'src/__tests__/eslintReport-3-errors.json'
 process.env['INPUT_ONLY-PR-FILES'] = 'false'
 process.env['INPUT_FAIL-ON-WARNING'] = 'false'
