@@ -1,0 +1,23 @@
+[
+  {
+    "filePath": "src/broken.ts",
+    "messages": [
+      {
+        "ruleId": null,
+        "severity": 2,
+        "message": "Parsing error: Unexpected token",
+        "line": 5,
+        "column": 10,
+        "fatal": true,
+        "nodeType": null
+      }
+    ],
+    "suppressedMessages": [],
+    "errorCount": 1,
+    "fatalErrorCount": 1,
+    "warningCount": 0,
+    "fixableErrorCount": 0,
+    "fixableWarningCount": 0,
+    "usedDeprecatedRules": []
+  }
+]

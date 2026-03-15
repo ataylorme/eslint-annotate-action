@@ -1,3 +1,7 @@
+# `4.0.0` - CONTAINS BREAKING CHANGES
+- Runs using Node 24
+
+
 # `3.0.0` - CONTAINS BREAKING CHANGES
 
 - Rename the `repo-token` input to `GITHUB_TOKEN`

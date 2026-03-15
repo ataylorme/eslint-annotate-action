@@ -1,20 +1,24 @@
 {
+  "$schema": "https://json.schemastore.org/tsconfig",
   "compilerOptions": {
-    "lib": ["ES2022"],
-    "module": "commonjs",
-    "target": "ES2022",
-    "strict": true,
+    "allowSyntheticDefaultImports": true,
+    "declaration": false,
     "esModuleInterop": true,
-    "skipLibCheck": true,
-    "noUnusedLocals": true,
-    "noUnusedParameters": true,
+    "forceConsistentCasingInFileNames": true,
+    "isolatedModules": true,
+    "lib": ["ES2022"],
+    "module": "NodeNext",
+    "moduleResolution": "NodeNext",
+    "newLine": "lf",
     "noImplicitAny": true,
-    "removeComments": false,
-    "preserveConstEnums": true,
-    "outDir": "./lib",
-    "rootDir": "./src",
-    "moduleResolution": "node"
+    "noUnusedLocals": true,
+    "outDir": "./dist",
+    "pretty": true,
+    "resolveJsonModule": true,
+    "strict": true,
+    "strictNullChecks": true,
+    "target": "ES2022"
   },
-  "include": [".github/actions/**/*.ts", "src/**/*.ts"],
-  "exclude": ["node_modules"]
+  "exclude": ["coverage", "dist", "node_modules"],
+  "include": ["src", "rollup.config.ts", "jest.config.js", "jest.setup.ts", "jest.env-setup.ts"]
 }

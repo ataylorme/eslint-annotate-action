@@ -1,42 +1,50 @@
 import * as core from '@actions/core'
-import eslintJsonReportToJs from './eslintJsonReportToJs'
-import getAnalyzedReport from './getAnalyzedReport'
-import openStatusCheck from './openStatusCheck'
-import closeStatusCheck from './closeStatusCheck'
-import addAnnotationsToStatusCheck from './addAnnotationsToStatusCheck'
-import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzedReport'
-import addSummary from './addSummary'
-import constants from './constants'
-const {reportFile, onlyChangedFiles, failOnError, failOnWarning, markdownReportOnStepSummary} = constants
+import eslintJsonReportToJs from './eslintJsonReportToJs.js'
+import getAnalyzedReport from './getAnalyzedReport.js'
+import openStatusCheck from './openStatusCheck.js'
+import closeStatusCheck from './closeStatusCheck.js'
+import addAnnotationsToStatusCheck from './addAnnotationsToStatusCheck.js'
+import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzedReport.js'
+import addSummary from './addSummary.js'
+import addComment from './addComment.js'
+import constants from './constants.js'
+const {reportFile, onlyChangedFiles, failOnError, failOnWarning, neutralOnWarning, markdownReportOnStepSummary, postComment} = constants
 
 async function run(): Promise<void> {
   core.info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`)
-  const reportJS = await eslintJsonReportToJs(reportFile)
-  const analyzedReport = onlyChangedFiles
-    ? await getPullRequestChangedAnalyzedReport(reportJS)
-    : getAnalyzedReport(reportJS)
-  const annotations = analyzedReport.annotations
-  const conclusion = analyzedReport.success ? 'success' : 'failure'
-
-  core.info(analyzedReport.summary)
-
-  core.setOutput('summary', analyzedReport.summary)
-  core.setOutput('errorCount', analyzedReport.errorCount)
-  core.setOutput('warningCount', analyzedReport.warningCount)
 
   try {
-    // Create a new, in-progress status check
+    const reportJS = await eslintJsonReportToJs(reportFile)
+    const analyzedReport = onlyChangedFiles
+      ? await getPullRequestChangedAnalyzedReport(reportJS)
+      : getAnalyzedReport(reportJS)
+
+    core.info(analyzedReport.summary)
+    core.setOutput('summary', analyzedReport.summary)
+    core.setOutput('errorCount', analyzedReport.errorCount)
+    core.setOutput('warningCount', analyzedReport.warningCount)
+
+    // Determine check conclusion
+    let conclusion: 'success' | 'failure' | 'neutral'
+    if (!analyzedReport.success) {
+      conclusion = 'failure'
+    } else if (neutralOnWarning && analyzedReport.warningCount > 0 && !failOnWarning) {
+      conclusion = 'neutral'
+    } else {
+      conclusion = 'success'
+    }
+
     const checkId = await openStatusCheck()
+    await addAnnotationsToStatusCheck(analyzedReport.annotations, checkId)
 
-    // Add all the annotations to the status check
-    await addAnnotationsToStatusCheck(annotations, checkId)
-
-    // Add report to job summary
     if (markdownReportOnStepSummary) {
       await addSummary(analyzedReport.markdown)
     }
 
-    // Finally, close the GitHub check as completed
+    if (postComment) {
+      await addComment(analyzedReport.markdown)
+    }
+
     await closeStatusCheck(
       conclusion,
       checkId,
@@ -44,23 +52,18 @@ async function run(): Promise<void> {
       markdownReportOnStepSummary ? analyzedReport.markdown : '',
     )
 
-    // Fail the Action if the report analysis conclusions is failure
-    if ((failOnWarning || failOnError) && conclusion === 'failure') {
-      core.setFailed(`${analyzedReport.errorCount} errors and ${analyzedReport.warningCount} warnings`)
-      process.exit(1)
+    if ((failOnWarning && analyzedReport.warningCount > 0) || (failOnError && analyzedReport.errorCount > 0)) {
+      core.setFailed(`${analyzedReport.errorCount} ESLint error(s) and ${analyzedReport.warningCount} ESLint warning(s) found`)
     }
   } catch (err) {
-    const errorMessage = 'Error creating a status check for the ESLint analysis.'
-    // err only has an error message if it is an instance of Error
     if (err instanceof Error) {
-      core.setFailed(err.message ? err.message : errorMessage)
+      core.setFailed(err.message)
     } else {
-      core.setFailed(errorMessage)
+      core.setFailed('An unexpected error occurred during ESLint report analysis.')
     }
   }
-  // If we got this far things were a success
-  core.info('ESLint report analysis complete. No errors found!')
-  process.exit(0)
+
+  core.info('ESLint report analysis complete.')
 }
 
 run()

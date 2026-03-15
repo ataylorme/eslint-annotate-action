@@ -1,20 +1,10 @@
-import constants from './constants'
-const {octokit} = constants
-import type {checkUpdateParametersType, updateCheckRunResponseDataType} from './types'
+import {octokit} from './constants.js'
+import type {CheckUpdateParams, CheckUpdateData} from './types.js'
 
 /**
- * Update a GitHub check run
- * @param options the parameter for octokit.checks.update
+ * Updates an existing GitHub check run.
  */
-export default async function updateStatusCheck(
-  options: checkUpdateParametersType,
-): Promise<updateCheckRunResponseDataType> {
-  try {
-    // https://developer.github.com/v3/checks/runs/#update-a-check-run
-    // https://octokit.github.io/rest.js/v18#checks-update
-    const response = await octokit.checks.update(options)
-    return Promise.resolve(response.data)
-  } catch (error) {
-    return Promise.reject(error)
-  }
+export default async function updateStatusCheck(options: CheckUpdateParams): Promise<CheckUpdateData> {
+  const response = await octokit.rest.checks.update(options)
+  return response.data
 }

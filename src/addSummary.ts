@@ -1,9 +1,9 @@
 import * as core from '@actions/core'
 
 /**
- * Add to job summary
+ * Appends markdown content to the GitHub Actions job summary.
  */
-export default async function addSummary(summary: string): Promise<void> {
-  core.summary.addRaw(summary)
+export default async function addSummary(markdown: string): Promise<void> {
+  core.summary.addRaw(markdown)
   await core.summary.write()
 }

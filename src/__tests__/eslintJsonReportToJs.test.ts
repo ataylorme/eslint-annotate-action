@@ -1,29 +1,37 @@
-import eslintJsonReportToJs from '../eslintJsonReportToJs'
-import reportJSExpected from './eslintReport-3-errors'
-import indentReportJSExpected from './eslintReport-1-error'
+import eslintJsonReportToJs from '../eslintJsonReportToJs.js'
+import reportJSExpected from './eslintReport-3-errors.js'
+import indentReportJSExpected from './eslintReport-1-error.js'
+
 const cwd = process.cwd()
 
-describe('ESLint report JSON to JS', () => {
-  it('Converts a standard ESLint JSON file to a JS object', async () => {
+describe('eslintJsonReportToJs', () => {
+  it('converts a standard ESLint JSON file to a JS object', async () => {
     const testReportPath = `${cwd}/src/__tests__/eslintReport-3-errors.json`
     const reportJS = await eslintJsonReportToJs(testReportPath)
     expect(reportJS).toEqual(reportJSExpected)
   })
 
-  it('Converts an ESLint JSON file with indentation errors to a JS object', async () => {
+  it('converts an ESLint JSON file with indentation errors to a JS object', async () => {
     const testReportPath = `${cwd}/src/__tests__/eslintReport-1-error.json`
     const reportJS = await eslintJsonReportToJs(testReportPath)
     expect(reportJS).toEqual(indentReportJSExpected)
   })
 
-  it('Supports glob paths', async () => {
-    const testReportPath = `${cwd}/src/__tests__/eslintReport-*-error*.json`
+  it('supports glob patterns and merges multiple reports', async () => {
+    // Pattern targets only the 1-error and 3-errors fixtures (excludes fatal-error, warning, etc.)
+    const testReportPath = `${cwd}/src/__tests__/eslintReport-[13]-error*.json`
     const reportJS = await eslintJsonReportToJs(testReportPath)
     expect(reportJS).toEqual([...indentReportJSExpected, ...reportJSExpected])
   })
 
-  it('Throws an error when the report is empty', () => {
+  it('throws when the glob matches no files', async () => {
+    const testReportPath = `${cwd}/src/__tests__/eslintReport-does-not-exist.json`
+    await expect(eslintJsonReportToJs(testReportPath)).rejects.toThrow('No ESLint report files found')
+  })
+
+  it('throws when a matched file contains invalid JSON', async () => {
+    // eslintReport-empty.json is a zero-byte file — JSON.parse('') throws
     const testReportPath = `${cwd}/src/__tests__/eslintReport-empty.json`
-    expect(() => eslintJsonReportToJs(testReportPath)).rejects.toThrowError()
+    await expect(eslintJsonReportToJs(testReportPath)).rejects.toThrow('Error parsing the report-json file')
   })
 })

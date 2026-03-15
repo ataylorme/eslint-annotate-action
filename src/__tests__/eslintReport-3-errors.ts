@@ -1,4 +1,4 @@
-import {ESLintReport} from '../types'
+import type {ESLintReport} from '../types.js'
 
 /* eslint-disable */
 

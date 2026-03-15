@@ -1,42 +1,43 @@
-import getPullRequestFiles from './getPullRequestFiles'
-import getAnalyzedReport from './getAnalyzedReport'
-import type {ESLintReport, AnalyzedESLintReport} from './types'
-import constants from './constants'
+import getPullRequestFiles from './getPullRequestFiles.js'
+import getAnalyzedReport from './getAnalyzedReport.js'
+import type {ESLintReport, AnalyzedESLintReport} from './types.js'
+import constants from './constants.js'
 const {GITHUB_WORKSPACE, OWNER, REPO, pullRequest, onlyChangedFiles} = constants
 
+function stripWorkspace(filePath: string): string {
+  if (GITHUB_WORKSPACE && filePath.startsWith(GITHUB_WORKSPACE)) {
+    return filePath.slice(GITHUB_WORKSPACE.length + 1)
+  }
+  return filePath
+}
+
 /**
- * Analyzes an ESLint report, separating pull request changed files
- * @param reportJS a JavaScript representation of an ESLint JSON report
+ * Analyzes an ESLint report, filtering to pull request changed files.
  */
 export default async function getPullRequestChangedAnalyzedReport(
   reportJS: ESLintReport,
 ): Promise<AnalyzedESLintReport> {
-  const changedFiles = await getPullRequestFiles({
-    owner: OWNER,
-    repo: REPO,
-    pull_number: pullRequest.number,
-  })
+  if (!pullRequest) {
+    throw new Error('getPullRequestChangedAnalyzedReport called outside of a pull_request event')
+  }
 
-  // Separate lint reports for PR and non-PR files
-  const pullRequestFilesReportJS: ESLintReport = reportJS.filter((file) => {
-    file.filePath = file.filePath.replace(GITHUB_WORKSPACE + '/', '')
-    return changedFiles.indexOf(file.filePath) !== -1
-  })
+  const changedFiles = await getPullRequestFiles(OWNER, REPO, pullRequest.number)
 
-  const analyzedPullRequestReport = getAnalyzedReport(pullRequestFilesReportJS)
-  let summary = `${analyzedPullRequestReport.summary} in pull request changed files.`
-  let markdown = `# Pull Request Changed Files ESLint Results:\n**${analyzedPullRequestReport.summary}**\n${analyzedPullRequestReport.markdown}`
+  // Strip workspace prefix without mutating the original report entries
+  const normalizedReport = reportJS.map((file) => ({...file, filePath: stripWorkspace(file.filePath)}))
+
+  const pullRequestFilesReport: ESLintReport = normalizedReport.filter((file) => changedFiles.includes(file.filePath))
+
+  const analyzedPRReport = getAnalyzedReport(pullRequestFilesReport)
+  let summary = `${analyzedPRReport.summary} in pull request changed files.`
+  let markdown = `# Pull Request Changed Files ESLint Results:\n**${analyzedPRReport.summary}**\n${analyzedPRReport.markdown}`
 
   if (!onlyChangedFiles) {
-    const nonPullRequestFilesReportJS: ESLintReport = reportJS.filter((file) => {
-      file.filePath = file.filePath.replace(GITHUB_WORKSPACE + '/', '')
-      return changedFiles.indexOf(file.filePath) === -1
-    })
+    const nonPRFilesReport: ESLintReport = normalizedReport.filter((file) => !changedFiles.includes(file.filePath))
+    const analyzedNonPRReport = getAnalyzedReport(nonPRFilesReport)
 
-    const analyzedNonPullRequestReport = getAnalyzedReport(nonPullRequestFilesReportJS)
-
-    summary += `${analyzedNonPullRequestReport.summary} in files outside of the pull request.`
-    markdown += `\n\n# Non-Pull Request Changed Files ESLint Results:\n**${analyzedNonPullRequestReport.summary}**\n${analyzedNonPullRequestReport.markdown}`
+    summary += ` ${analyzedNonPRReport.summary} in files outside of the pull request.`
+    markdown += `\n\n# Non-Pull Request Changed Files ESLint Results:\n**${analyzedNonPRReport.summary}**\n${analyzedNonPRReport.markdown}`
   }
 
   if (markdown.length > 65535) {
@@ -44,11 +45,11 @@ export default async function getPullRequestChangedAnalyzedReport(
   }
 
   return {
-    errorCount: analyzedPullRequestReport.errorCount,
-    warningCount: analyzedPullRequestReport.warningCount,
+    errorCount: analyzedPRReport.errorCount,
+    warningCount: analyzedPRReport.warningCount,
     markdown,
-    success: analyzedPullRequestReport.success,
+    success: analyzedPRReport.success,
     summary,
-    annotations: analyzedPullRequestReport.annotations,
+    annotations: analyzedPRReport.annotations,
   }
 }

@@ -6,7 +6,13 @@ on:
       - master
       - v2
       - v3
+      - v4
   pull_request:
+
+permissions:
+  checks: write
+  contents: read
+  pull-requests: read
 
 jobs:
   node_test:
@@ -17,16 +23,15 @@ jobs:
       - name: Setup NodeJS
         uses: actions/setup-node@v4
         with:
-          node-version: 20
+          node-version: 24
           cache: npm
       - name: Install Node Dependencies
         run: npm ci
         env:
           CI: TRUE
+      - name: Run Unit Tests
+        run: npm test
       - name: Save Code Linting Report JSON
-        # npm script for ESLint
-        # eslint --output-file eslint_report.json --format json src
-        # See https://eslint.org/docs/user-guide/command-line-interface#options
         run: npm run lint:report
         continue-on-error: true
       - name: Annotate Code Linting Results
@@ -40,7 +45,5 @@ jobs:
           name: eslint_report.json
           path: eslint_report.json
           retention-days: 7
-      - name: Test That The Project Builds
-        run: npm run build
-      - name: Run Unit Tests
-        run: npm run test
+      - name: Build
+        run: npm run package

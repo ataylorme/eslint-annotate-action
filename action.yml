@@ -21,12 +21,20 @@ inputs:
     description: "Whether to fail the Github action when ESLint errors are detected. If set to false, the check that is created will still fail on ESLint errors."
     default: 'true'
     required: false
+  neutral-on-warning:
+    description: "Set the check conclusion to 'neutral' when ESLint warnings are detected but no errors. Overridden by fail-on-warning."
+    default: 'false'
+    required: false
   check-name:
     description: "The name of the GitHub status check created."
     default: 'ESLint Report Analysis'
     required: false
   markdown-report-on-step-summary:
     description: "Whether to show a markdown report in the step summary."
+    default: 'false'
+    required: false
+  post-comment:
+    description: "Whether to post the markdown report as a pull request comment. Replaces any previous comment from this action."
     default: 'false'
     required: false
 runs:

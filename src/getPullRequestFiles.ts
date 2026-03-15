@@ -1,22 +1,13 @@
-import type {prFilesParametersType, prFilesResponseType} from './types'
-import constants from './constants'
-const {octokit} = constants
+import {octokit} from './constants.js'
 
 /**
- * Get an array of files changed in a pull request
- * @param options the parameters for octokit.pulls.listFiles
+ * Returns the list of filenames changed in a pull request.
  */
-export default async function getPullRequestFiles(options: prFilesParametersType): Promise<string[]> {
-  try {
-    // https://developer.github.com/v3/pulls/#list-pull-requests-files
-    // https://octokit.github.io/rest.js/v18#pulls-list-files
-    // https://octokit.github.io/rest.js/v18#pagination
-    const prFiles: prFilesResponseType['data'] = await octokit.paginate(
-      'GET /repos/:owner/:repo/pulls/:pull_number/files',
-      options,
-    )
-    return prFiles.map((prFiles: prFilesResponseType['data']) => prFiles.filename)
-  } catch (error) {
-    return Promise.reject(error)
-  }
+export default async function getPullRequestFiles(owner: string, repo: string, pullNumber: number): Promise<string[]> {
+  const files = await octokit.paginate(octokit.rest.pulls.listFiles, {
+    owner,
+    repo,
+    pull_number: pullNumber,
+  })
+  return files.map((f) => f.filename)
 }
