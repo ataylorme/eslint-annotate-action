@@ -1,6 +1,6 @@
 import createStatusCheck from './createStatusCheck.js'
 import constants from './constants.js'
-const {OWNER, REPO, SHA, getTimestamp, checkName} = constants
+const { OWNER, REPO, SHA, getTimestamp, checkName } = constants
 
 /**
  * Creates a new in-progress GitHub check run and returns its ID.

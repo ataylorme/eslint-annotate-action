@@ -1,7 +1,7 @@
 import updateStatusCheck from './updateStatusCheck.js'
 import constants from './constants.js'
-import type {CheckUpdateParams} from './types.js'
-const {OWNER, REPO, getTimestamp, checkName} = constants
+import type { CheckUpdateParams } from './types.js'
+const { OWNER, REPO, getTimestamp, checkName } = constants
 
 /**
  * Closes a GitHub check run with a final conclusion.

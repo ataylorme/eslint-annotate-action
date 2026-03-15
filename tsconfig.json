@@ -20,5 +20,5 @@
     "target": "ES2022"
   },
   "exclude": ["coverage", "dist", "node_modules"],
-  "include": ["src", "rollup.config.ts", "jest.config.js", "jest.setup.ts", "jest.env-setup.ts"]
+  "include": ["src", "jest.config.js", "jest.setup.ts", "jest.env-setup.ts"]
 }

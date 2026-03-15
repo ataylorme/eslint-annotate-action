@@ -1,6 +1,4 @@
-import type {AnalyzedESLintReport} from '../types.js'
-
-/* eslint-disable */
+import type { AnalyzedESLintReport } from '../types.js'
 
 const reportAnalyzedExpected: AnalyzedESLintReport = {
   errorCount: 3,
@@ -55,7 +53,5 @@ const reportAnalyzedExpected: AnalyzedESLintReport = {
     },
   ],
 }
-
-/* eslint-enable */
 
 export default reportAnalyzedExpected

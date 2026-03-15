@@ -1,6 +1,6 @@
-import type {ESLintReport, CheckAnnotation, AnalyzedESLintReport} from './types.js'
+import type { ESLintReport, CheckAnnotation, AnalyzedESLintReport } from './types.js'
 import constants from './constants.js'
-const {core, GITHUB_WORKSPACE, OWNER, REPO, SHA, unusedDirectiveMessagePrefix} = constants
+const { core, GITHUB_WORKSPACE, OWNER, REPO, SHA, unusedDirectiveMessagePrefix } = constants
 
 /**
  * Analyzes an ESLint report JS object and returns a report.
@@ -18,7 +18,7 @@ export default function getAnalyzedReport(files: ESLintReport, failOnWarningOver
   const annotations: CheckAnnotation[] = []
 
   for (const file of files) {
-    const {filePath, messages} = file
+    const { filePath, messages } = file
 
     core.info(`Analyzing ${filePath}`)
 
@@ -30,8 +30,8 @@ export default function getAnalyzedReport(files: ESLintReport, failOnWarningOver
     warningCount += file.warningCount
 
     for (const lintMessage of messages) {
-      const {column, severity, ruleId, message} = lintMessage
-      let {line} = lintMessage
+      const { column, severity, ruleId, message } = lintMessage
+      let { line } = lintMessage
       if (!line) {
         line = 1
       }

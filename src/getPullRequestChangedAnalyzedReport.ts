@@ -1,8 +1,8 @@
 import getPullRequestFiles from './getPullRequestFiles.js'
 import getAnalyzedReport from './getAnalyzedReport.js'
-import type {ESLintReport, AnalyzedESLintReport} from './types.js'
+import type { ESLintReport, AnalyzedESLintReport } from './types.js'
 import constants from './constants.js'
-const {GITHUB_WORKSPACE, OWNER, REPO, pullRequest, onlyChangedFiles} = constants
+const { GITHUB_WORKSPACE, OWNER, REPO, pullRequest, onlyChangedFiles } = constants
 
 function stripWorkspace(filePath: string): string {
   if (GITHUB_WORKSPACE && filePath.startsWith(GITHUB_WORKSPACE)) {
@@ -24,7 +24,7 @@ export default async function getPullRequestChangedAnalyzedReport(
   const changedFiles = await getPullRequestFiles(OWNER, REPO, pullRequest.number)
 
   // Strip workspace prefix without mutating the original report entries
-  const normalizedReport = reportJS.map((file) => ({...file, filePath: stripWorkspace(file.filePath)}))
+  const normalizedReport = reportJS.map((file) => ({ ...file, filePath: stripWorkspace(file.filePath) }))
 
   const pullRequestFilesReport: ESLintReport = normalizedReport.filter((file) => changedFiles.includes(file.filePath))
 

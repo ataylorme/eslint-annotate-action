@@ -1,8 +1,8 @@
 import * as core from '@actions/core'
-import {context, getOctokit} from '@actions/github'
-import type {PullRequestPayload} from './types.js'
+import { context, getOctokit } from '@actions/github'
+import type { PullRequestPayload } from './types.js'
 
-const token = core.getInput('GITHUB_TOKEN', {required: true})
+const token = core.getInput('GITHUB_TOKEN', { required: true })
 export const octokit = getOctokit(token)
 
 const isPullRequest = 'pull_request' in context.payload
@@ -29,13 +29,30 @@ function getInputs() {
   const markdownReportOnStepSummary = getBooleanInput('markdown-report-on-step-summary', false)
   const postComment = getBooleanInput('post-comment', false)
   const checkName = core.getInput('check-name') || 'ESLint Report Analysis'
-  const reportFile = core.getInput('report-json', {required: true})
+  const reportFile = core.getInput('report-json', { required: true })
 
-  return {onlyChangedFiles, failOnWarning, failOnError, neutralOnWarning, markdownReportOnStepSummary, postComment, checkName, reportFile}
+  return {
+    onlyChangedFiles,
+    failOnWarning,
+    failOnError,
+    neutralOnWarning,
+    markdownReportOnStepSummary,
+    postComment,
+    checkName,
+    reportFile,
+  }
 }
 
-const {onlyChangedFiles, failOnWarning, failOnError, neutralOnWarning, markdownReportOnStepSummary, postComment, checkName, reportFile} =
-  getInputs()
+const {
+  onlyChangedFiles,
+  failOnWarning,
+  failOnError,
+  neutralOnWarning,
+  markdownReportOnStepSummary,
+  postComment,
+  checkName,
+  reportFile,
+} = getInputs()
 
 // Guard: empty string means workspace is unknown; path stripping is skipped
 const GITHUB_WORKSPACE = process.env['GITHUB_WORKSPACE'] ?? ''

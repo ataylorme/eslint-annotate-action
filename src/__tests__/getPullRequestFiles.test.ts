@@ -1,4 +1,4 @@
-import {jest} from '@jest/globals'
+import { jest } from '@jest/globals'
 
 const mockPaginate = jest.fn()
 const mockListFiles = jest.fn()
@@ -8,20 +8,20 @@ jest.unstable_mockModule('../constants.js', () => ({
     GITHUB_WORKSPACE: '',
     OWNER: 'ataylorme',
     REPO: 'eslint-annotate-github-action',
-    pullRequest: {number: 3, head: {sha: '8e80ec28fec6ef9763aacbabb452bcb5d92315ca'}},
+    pullRequest: { number: 3, head: { sha: '8e80ec28fec6ef9763aacbabb452bcb5d92315ca' } },
     onlyChangedFiles: true,
     failOnWarning: false,
     unusedDirectiveMessagePrefix: 'Unused eslint-disable directive',
-    core: {info: jest.fn(), setFailed: jest.fn()},
+    core: { info: jest.fn(), setFailed: jest.fn() },
     checkName: 'ESLint Report Analysis',
   },
   octokit: {
     paginate: mockPaginate,
-    rest: {pulls: {listFiles: mockListFiles}},
+    rest: { pulls: { listFiles: mockListFiles } },
   },
 }))
 
-const {default: getPullRequestFiles} = await import('../getPullRequestFiles.js')
+const { default: getPullRequestFiles } = await import('../getPullRequestFiles.js')
 
 describe('getPullRequestFiles', () => {
   beforeEach(() => {
@@ -29,7 +29,7 @@ describe('getPullRequestFiles', () => {
   })
 
   it('returns filenames from the GitHub API response', async () => {
-    const mockFiles = [{filename: 'src/app.ts'}, {filename: 'src/utils.ts'}, {filename: 'README.md'}]
+    const mockFiles = [{ filename: 'src/app.ts' }, { filename: 'src/utils.ts' }, { filename: 'README.md' }]
     mockPaginate.mockResolvedValue(mockFiles)
 
     const result = await getPullRequestFiles('ataylorme', 'eslint-annotate-github-action', 3)

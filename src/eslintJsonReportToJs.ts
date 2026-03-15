@@ -2,7 +2,7 @@ import * as glob from '@actions/glob'
 import fs from 'fs'
 import path from 'path'
 
-import type {ESLintReport} from './types.js'
+import type { ESLintReport } from './types.js'
 
 function parseReportFile(reportFile: string): ESLintReport {
   const reportPath = path.resolve(reportFile)

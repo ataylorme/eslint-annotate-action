@@ -37433,9 +37433,18 @@ function getInputs() {
     const postComment = getBooleanInput('post-comment', false);
     const checkName = getInput('check-name') || 'ESLint Report Analysis';
     const reportFile = getInput('report-json', { required: true });
-    return { onlyChangedFiles, failOnWarning, failOnError, neutralOnWarning, markdownReportOnStepSummary, postComment, checkName, reportFile };
+    return {
+        onlyChangedFiles,
+        failOnWarning,
+        failOnError,
+        neutralOnWarning,
+        markdownReportOnStepSummary,
+        postComment,
+        checkName,
+        reportFile,
+    };
 }
-const { onlyChangedFiles: onlyChangedFiles$2, failOnWarning: failOnWarning$1, failOnError: failOnError$1, neutralOnWarning: neutralOnWarning$1, markdownReportOnStepSummary: markdownReportOnStepSummary$1, postComment: postComment$1, checkName: checkName$3, reportFile: reportFile$1 } = getInputs();
+const { onlyChangedFiles: onlyChangedFiles$2, failOnWarning: failOnWarning$1, failOnError: failOnError$1, neutralOnWarning: neutralOnWarning$1, markdownReportOnStepSummary: markdownReportOnStepSummary$1, postComment: postComment$1, checkName: checkName$3, reportFile: reportFile$1, } = getInputs();
 // Guard: empty string means workspace is unknown; path stripping is skipped
 const GITHUB_WORKSPACE$2 = process.env['GITHUB_WORKSPACE'] ?? '';
 // https://github.com/eslint/eslint/blob/a59a4e6e9217b3cc503c0a702b9e3b02b20b980d/lib/linter/apply-disable-directives.js#L253
@@ -37731,7 +37740,7 @@ async function addComment(markdown) {
     });
 }
 
-const { reportFile, onlyChangedFiles, failOnError, failOnWarning, neutralOnWarning, markdownReportOnStepSummary, postComment } = constants;
+const { reportFile, onlyChangedFiles, failOnError, failOnWarning, neutralOnWarning, markdownReportOnStepSummary, postComment, } = constants;
 async function run() {
     info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`);
     try {

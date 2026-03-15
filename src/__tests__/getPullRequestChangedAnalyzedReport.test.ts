@@ -1,4 +1,4 @@
-import {jest} from '@jest/globals'
+import { jest } from '@jest/globals'
 
 const MOCK_SHA = '8e80ec28fec6ef9763aacbabb452bcb5d92315ca'
 
@@ -9,12 +9,12 @@ jest.unstable_mockModule('../constants.js', () => ({
     GITHUB_WORKSPACE: '',
     OWNER: 'ataylorme',
     REPO: 'eslint-annotate-github-action',
-    pullRequest: {number: 1, head: {sha: MOCK_SHA}},
+    pullRequest: { number: 1, head: { sha: MOCK_SHA } },
     onlyChangedFiles: true,
     failOnWarning: false,
     unusedDirectiveMessagePrefix: 'Unused eslint-disable directive',
     SHA: MOCK_SHA,
-    core: {info: jest.fn(), setFailed: jest.fn()},
+    core: { info: jest.fn(), setFailed: jest.fn() },
     checkName: 'ESLint Report Analysis',
   },
   octokit: {},
@@ -24,14 +24,22 @@ jest.unstable_mockModule('../getPullRequestFiles.js', () => ({
   default: mockGetPullRequestFiles,
 }))
 
-const {default: getPullRequestChangedAnalyzedReport} = await import('../getPullRequestChangedAnalyzedReport.js')
-import type {ESLintReport} from '../types.js'
+const { default: getPullRequestChangedAnalyzedReport } = await import('../getPullRequestChangedAnalyzedReport.js')
+import type { ESLintReport } from '../types.js'
 
 const mockReport: ESLintReport = [
   {
     filePath: 'src/app.ts',
     messages: [
-      {ruleId: 'no-console', severity: 2, message: 'Unexpected console.', line: 3, column: 1, endLine: 3, endColumn: 8},
+      {
+        ruleId: 'no-console',
+        severity: 2,
+        message: 'Unexpected console.',
+        line: 3,
+        column: 1,
+        endLine: 3,
+        endColumn: 8,
+      },
     ],
     suppressedMessages: [],
     errorCount: 1,
@@ -43,7 +51,7 @@ const mockReport: ESLintReport = [
   },
   {
     filePath: 'src/other.ts',
-    messages: [{ruleId: 'no-unused-vars', severity: 2, message: 'Unused var.', line: 1, column: 1}],
+    messages: [{ ruleId: 'no-unused-vars', severity: 2, message: 'Unused var.', line: 1, column: 1 }],
     suppressedMessages: [],
     errorCount: 1,
     fatalErrorCount: 0,
@@ -108,7 +116,7 @@ describe('getPullRequestChangedAnalyzedReport', () => {
     const longReport: ESLintReport = [
       {
         filePath: 'src/app.ts',
-        messages: Array.from({length: 500}, (_, i) => ({
+        messages: Array.from({ length: 500 }, (_, i) => ({
           ruleId: 'no-console',
           severity: 2,
           message: `Error at line ${i}: ${'x'.repeat(200)}`,

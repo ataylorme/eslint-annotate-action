@@ -1,4 +1,4 @@
-import {jest} from '@jest/globals'
+import { jest } from '@jest/globals'
 import reportAnalyzedExpected from './eslintReport-3-errors-analyzed.js'
 import indentationReportAnalyzedExpected from './eslintReport-1-error-analyzed.js'
 import unusedDisabledDirectiveAnalyzedExpected from './eslintReport-unused-eslint-disable-directive-analyzed.js'
@@ -16,12 +16,12 @@ jest.unstable_mockModule('../constants.js', () => ({
     failOnWarning: false,
     unusedDirectiveMessagePrefix: 'Unused eslint-disable directive',
     checkName: 'ESLint Report Analysis',
-    core: {info: jest.fn(), setFailed: jest.fn()},
+    core: { info: jest.fn(), setFailed: jest.fn() },
   },
 }))
 
-const {default: getAnalyzedReport} = await import('../getAnalyzedReport.js')
-const {default: eslintJsonReportToJs} = await import('../eslintJsonReportToJs.js')
+const { default: getAnalyzedReport } = await import('../getAnalyzedReport.js')
+const { default: eslintJsonReportToJs } = await import('../eslintJsonReportToJs.js')
 
 const cwd = process.cwd()
 
@@ -37,7 +37,9 @@ describe('getAnalyzedReport', () => {
   })
 
   it('handles --report-unused-disable-directives (null ruleId, non-fatal)', async () => {
-    const reportJS = await eslintJsonReportToJs(`${cwd}/src/__tests__/eslintReport-unused-eslint-disable-directive.json`)
+    const reportJS = await eslintJsonReportToJs(
+      `${cwd}/src/__tests__/eslintReport-unused-eslint-disable-directive.json`,
+    )
     expect(getAnalyzedReport(reportJS)).toEqual(unusedDisabledDirectiveAnalyzedExpected)
   })
 
@@ -82,7 +84,9 @@ describe('getAnalyzedReport', () => {
     const reportJS = [
       {
         filePath: '/home/runner/work/repo/src/app.ts',
-        messages: [{ruleId: 'no-console', severity: 1, message: 'No console.', line: 1, column: 1, endLine: 1, endColumn: 10}],
+        messages: [
+          { ruleId: 'no-console', severity: 1, message: 'No console.', line: 1, column: 1, endLine: 1, endColumn: 10 },
+        ],
         suppressedMessages: [],
         errorCount: 0,
         fatalErrorCount: 0,

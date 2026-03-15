@@ -1,6 +1,6 @@
-import {octokit} from './constants.js'
+import { octokit } from './constants.js'
 import constants from './constants.js'
-const {OWNER, REPO, pullRequest} = constants
+const { OWNER, REPO, pullRequest } = constants
 
 // Hidden marker so we can find and replace a previous comment from this action
 const COMMENT_MARKER = '<!-- eslint-annotate-action -->'

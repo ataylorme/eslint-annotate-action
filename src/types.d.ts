@@ -1,4 +1,4 @@
-import type {RestEndpointMethodTypes} from '@octokit/plugin-rest-endpoint-methods'
+import type { RestEndpointMethodTypes } from '@octokit/plugin-rest-endpoint-methods'
 
 // GitHub Checks API annotation object
 export interface CheckAnnotation {
@@ -22,7 +22,7 @@ export type CheckUpdateData = RestEndpointMethodTypes['checks']['update']['respo
 // Minimal pull_request payload fields this action needs
 export interface PullRequestPayload {
   number: number
-  head: {sha: string}
+  head: { sha: string }
 }
 
 // ESLint JSON report types (see https://eslint.org/docs/latest/use/formatters/)
@@ -53,7 +53,7 @@ export interface ESLintEntry {
   fixableErrorCount: number
   fixableWarningCount: number
   source?: string | null
-  usedDeprecatedRules: Array<{ruleId: string; replacedBy: string[]}>
+  usedDeprecatedRules: Array<{ ruleId: string; replacedBy: string[] }>
 }
 
 export type ESLintReport = ESLintEntry[]

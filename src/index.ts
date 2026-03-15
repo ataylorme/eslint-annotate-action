@@ -8,7 +8,15 @@ import getPullRequestChangedAnalyzedReport from './getPullRequestChangedAnalyzed
 import addSummary from './addSummary.js'
 import addComment from './addComment.js'
 import constants from './constants.js'
-const {reportFile, onlyChangedFiles, failOnError, failOnWarning, neutralOnWarning, markdownReportOnStepSummary, postComment} = constants
+const {
+  reportFile,
+  onlyChangedFiles,
+  failOnError,
+  failOnWarning,
+  neutralOnWarning,
+  markdownReportOnStepSummary,
+  postComment,
+} = constants
 
 async function run(): Promise<void> {
   core.info(`Starting analysis of the ESLint report ${reportFile.replace(/\n/g, ', ')}. Standby...`)
@@ -53,7 +61,9 @@ async function run(): Promise<void> {
     )
 
     if ((failOnWarning && analyzedReport.warningCount > 0) || (failOnError && analyzedReport.errorCount > 0)) {
-      core.setFailed(`${analyzedReport.errorCount} ESLint error(s) and ${analyzedReport.warningCount} ESLint warning(s) found`)
+      core.setFailed(
+        `${analyzedReport.errorCount} ESLint error(s) and ${analyzedReport.warningCount} ESLint warning(s) found`,
+      )
     }
   } catch (err) {
     if (err instanceof Error) {

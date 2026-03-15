@@ -1,5 +1,5 @@
-import {octokit} from './constants.js'
-import type {CheckUpdateParams, CheckUpdateData} from './types.js'
+import { octokit } from './constants.js'
+import type { CheckUpdateParams, CheckUpdateData } from './types.js'
 
 /**
  * Updates an existing GitHub check run.

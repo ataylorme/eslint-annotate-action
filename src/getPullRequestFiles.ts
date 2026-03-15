@@ -1,4 +1,4 @@
-import {octokit} from './constants.js'
+import { octokit } from './constants.js'
 
 /**
  * Returns the list of filenames changed in a pull request.

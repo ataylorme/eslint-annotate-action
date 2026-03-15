@@ -1,4 +1,4 @@
-import {FlatCompat} from '@eslint/eslintrc'
+import { FlatCompat } from '@eslint/eslintrc'
 import js from '@eslint/js'
 import typescriptEslint from '@typescript-eslint/eslint-plugin'
 import tsParser from '@typescript-eslint/parser'
@@ -44,7 +44,7 @@ export default [
 
       parserOptions: {
         projectService: {
-          allowDefaultProject: ['eslint.config.mjs', 'jest.config.js', 'rollup.config.ts', 'jest.env-setup.ts'],
+          allowDefaultProject: ['eslint.config.mjs', 'jest.config.js', 'rollup.config.mjs'],
         },
         tsconfigRootDir: import.meta.dirname,
       },
