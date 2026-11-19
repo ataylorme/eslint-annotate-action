@@ -30322,7 +30322,7 @@ function getIDToken(aud) {
     });
 }
 
-var core$2 = /*#__PURE__*/Object.freeze({
+var core$3 = /*#__PURE__*/Object.freeze({
     __proto__: null,
     get ExitCode () { return ExitCode; },
     addPath: addPath,
@@ -37451,7 +37451,7 @@ const GITHUB_WORKSPACE$2 = process.env['GITHUB_WORKSPACE'] ?? '';
 const unusedDirectiveMessagePrefix$1 = 'Unused eslint-disable directive';
 const getTimestamp$2 = () => new Date().toISOString();
 var constants = {
-    core: core$2,
+    core: core$3,
     pullRequest: pullRequest$2,
     GITHUB_WORKSPACE: GITHUB_WORKSPACE$2,
     SHA: sha,
@@ -37469,7 +37469,7 @@ var constants = {
     unusedDirectiveMessagePrefix: unusedDirectiveMessagePrefix$1,
 };
 
-const { core: core$1, GITHUB_WORKSPACE: GITHUB_WORKSPACE$1, OWNER: OWNER$5, REPO: REPO$5, SHA: SHA$1, unusedDirectiveMessagePrefix } = constants;
+const { core: core$2, GITHUB_WORKSPACE: GITHUB_WORKSPACE$1, OWNER: OWNER$5, REPO: REPO$5, SHA: SHA$1, unusedDirectiveMessagePrefix } = constants;
 /**
  * Analyzes an ESLint report JS object and returns a report.
  * @param files - JavaScript representation of an ESLint JSON report
@@ -37485,7 +37485,7 @@ function getAnalyzedReport(files, failOnWarningOverride) {
     const annotations = [];
     for (const file of files) {
         const { filePath, messages } = file;
-        core$1.info(`Analyzing ${filePath}`);
+        core$2.info(`Analyzing ${filePath}`);
         if (!messages.length) {
             continue;
         }
@@ -37589,12 +37589,30 @@ async function openStatusCheck() {
     return response.id;
 }
 
+const { core: core$1 } = constants;
+const MAX_ATTEMPTS = 4;
+function isNotFoundError(err) {
+    return typeof err === 'object' && err !== null && 'status' in err && err.status === 404;
+}
 /**
  * Updates an existing GitHub check run.
+ * GitHub can answer 404 for a short time right after a check run is created, so a 404 is retried with a growing wait.
  */
 async function updateStatusCheck(options) {
-    const response = await octokit.rest.checks.update(options);
-    return response.data;
+    for (let attempt = 1;; attempt++) {
+        try {
+            const response = await octokit.rest.checks.update(options);
+            return response.data;
+        }
+        catch (err) {
+            if (!isNotFoundError(err) || attempt === MAX_ATTEMPTS) {
+                throw err;
+            }
+            const delayMs = 1000 * 2 ** (attempt - 1);
+            core$1.info(`Check run ${options.check_run_id} not found yet, retrying in ${delayMs / 1000}s...`);
+            await new Promise((resolve) => setTimeout(resolve, delayMs));
+        }
+    }
 }
 
 const { OWNER: OWNER$3, REPO: REPO$3, getTimestamp, checkName: checkName$1 } = constants;
